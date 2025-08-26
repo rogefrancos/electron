@@ -1,0 +1,23 @@
+{
+  "name": "package",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/rogefrancos/electron.git"
+  },
+  "author": "rogetupapu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rogefrancos/electron/issues"
+  },
+  "homepage": "https://github.com/rogefrancos/electron#readme",
+  "devDependencies": {
+    "electron": "^37.3.0"
+  }
+}
