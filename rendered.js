@@ -12,5 +12,5 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 // esta parte usa la respuesta que se estaba esperando de la api y segun la situacion responde
 // determina el contenido del div
   document.getElementById('result').textContent = 
-    result.success ? window.location.href = "index2.html" : 'Invalid credentials';
+    result.success ? window.location.href = "index2.html" : 'Estado: Usuario o constrasena incorrectos';
 });

@@ -1,2 +1,3 @@
-# ingora los modulos instalados
+# ignora los modulos instalados junto con la base de datos, la cual se genera cada vez que se inicia la aplicacion
 node_modules/
+labdata.db

@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.contenedor-landing{
+    font-size: 20px;
+    color: black;
+    font-weight: 700;
+    display: grid;
+    grid-template-columns: 40% auto;
+    background-color: white
+
+}
+
+.main-login{
+    width: 100%;
+}
+
+#loginForm{
+    padding: 10%;
+}
+#loginForm > *{
+    height: 10%;
+    font-size: 100%;
+    margin-bottom: 5%;
+}
+
+#login-full-logo{
+    width: 90%;
+    height: 22%;
+}
+
+#img-login{
+    width: 100%;
+    height: 100%;
+}
+
+#btn-login{
+    background-color: lightseagreen;
+    width: 100%;
+    padding: 3px;
+    border-width: 0px;
+    border-color: lightgray;
+}

@@ -18,6 +18,10 @@
   },
   "homepage": "https://github.com/rogefrancos/electron#readme",
   "devDependencies": {
-    "electron": "^37.3.0"
+    "electron": "^37.3.0",
+    "electron-rebuild": "^3.2.9"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0"
   }
 }
