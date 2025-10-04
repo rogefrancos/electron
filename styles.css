@@ -1,3 +1,4 @@
+/*General*/
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,6 +6,23 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+a{
+    text-decoration: none;
+    font-size: 20px;
+    color: white;
+    margin-left: 20px;
+}
+
+a:hover{
+    color: lightseagreen;
+}
+
+body{
+    background-color: white;
+    display: flex;
+}
+
+/*Elementos login*/
 .contenedor-landing{
     font-size: 20px;
     color: black;
@@ -44,4 +62,102 @@
     padding: 3px;
     border-width: 0px;
     border-color: lightgray;
+}
+
+#result{
+    color: red;
+}
+
+/*Elementos Landing page*/
+.contenedor-header{
+    padding: 0%;
+    display: grid;
+    grid-template-columns: 10% auto auto auto;
+    background-color: lightgray;
+    text-align: center;
+}
+
+#contenedor-header-home{
+    background-color: lightseagreen;
+    text-align: center;
+}
+
+.contenedor-header > *{
+    padding: 20px;
+}
+
+/*Elementos Pacientes*/
+.pacient-form{
+  width: 30% ;
+}
+
+#btn-agg-pac{
+  background-color: lightseagreen;
+  width: 30% ;
+  padding: 3px;
+  border-width: 0px;
+  border-color: lightgray;
+}
+
+/*Example for the side bar*/
+/* Sidebar */
+.sidebar {
+  width: 200px;
+  transition: width 0.3s;
+  background-color:lightseagreen;
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.sidebar .icon {
+  font-size: 20px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.sidebar .text {
+  margin-left: 10px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.3s, width 0.3s;
+}
+
+.sidebar.collapsed .text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Toggle button */
+#toggle-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  margin: 10px;
+}
+
+#toggle-btn svg {
+  width: 24px;
+  height: 24px;
+  stroke: white; /* forces the stroke color */
+}
+
+/* Main content */
+.content {
+  flex: 1;
+  padding: 20px;
 }

@@ -18,6 +18,19 @@ db.prepare(
     `
 ).run();
 
+// creacion de la tabla de pacientes
+
+db.prepare(
+  `
+  CREATE TABLE IF NOT EXISTS pacient(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    apellidoP TEXT,
+    apellidoM TEXT
+)
+    `
+).run();
+
 // en la anterior no habia necesidad de insertar datos pero aqui se ve
 // como le proporcionamos la informacion si es necesario.
 // tambien trabaja con variables de js como se vera en el login
@@ -26,11 +39,16 @@ db.prepare(`
   INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)
 `).run('admin', '1234', 'admin');
 
+db.prepare(`
+  INSERT OR IGNORE INTO pacient (nombre, apellidoP, apellidoM) VALUES (?, ?, ?)
+`).run('Rogelio', 'Franco', 'Sanchez');
+
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1150,
+    width: 1170,
     height: 735,
+    resizable: false,
     // le dices donde se ubica el preload
     webPreferences: { preload: path.join(__dirname, 'preload.js') }
   });
@@ -53,6 +71,26 @@ ipcMain.handle('login', (event, username, password) => {
   // comprueba segun la logica anterior si si nos regreso el objeto y si si existe el login fue exitoso
   if (user) {
     return { success: true, role: user.role };
+  } else {
+    return { success: false };
+  }
+});
+
+// logica de registro de pacientes
+
+ipcMain.handle('regPac', (event, nombre, apellidoP, apellidoM) => {
+
+  // se escribe el query para insertar los datos que metimos en el form
+  const result = db.prepare(`
+    INSERT INTO pacient (nombre, apellidoP, apellidoM) VALUES (?, ?, ?)
+  `).run(nombre, apellidoP, apellidoM);
+
+  // const query2 = db.prepare(`SELECT * FROM pacient WHERE nombre = ? AND apellidoP = ? AND apellidoM = ?`);
+
+  const pac = db.prepare("SELECT * FROM pacient WHERE id = ?").get(result.lastInsertRowid);
+
+  if (pac) {
+    return { success: true, pac};
   } else {
     return { success: false };
   }
