@@ -31,6 +31,20 @@ db.prepare(
     `
 ).run();
 
+// creacion de la tabla de citas
+
+db.prepare(
+  `
+  CREATE TABLE IF NOT EXISTS citas(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    fecha DATE,
+    hora TIME,
+    nota TEXT
+)
+    `
+).run();
+
 // en la anterior no habia necesidad de insertar datos pero aqui se ve
 // como le proporcionamos la informacion si es necesario.
 // tambien trabaja con variables de js como se vera en el login
@@ -43,6 +57,13 @@ db.prepare(`
   INSERT OR IGNORE INTO pacient (nombre, apellidoP, apellidoM) VALUES (?, ?, ?)
 `).run('Rogelio', 'Franco', 'Sanchez');
 
+const citasCount = db.prepare("SELECT COUNT(*) AS count FROM citas").get();
+
+if (citasCount.count === 0) {
+    db.prepare(`
+      INSERT INTO citas (nombre, fecha, hora, nota) VALUES (?, ?, ?, ?)
+    `).run('Rogelio', '2025-08-18', '13:30', 'Alergico a las Abejas');
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -91,6 +112,26 @@ ipcMain.handle('regPac', (event, nombre, apellidoP, apellidoM) => {
 
   if (pac) {
     return { success: true, pac};
+  } else {
+    return { success: false };
+  }
+});
+
+
+// logica de registro de citas
+
+ipcMain.handle('regCit', (event, nombre, fecha, hora, nota) => { 
+  
+  // Query para insertar los 4 valores de la cita
+  const result = db.prepare(`
+    INSERT INTO citas (nombre, fecha, hora, nota) VALUES (?, ?, ?, ?)
+  `).run(nombre, fecha, hora, nota); 
+
+  // Busca el registro de la cita recién creada
+  const cit = db.prepare("SELECT * FROM citas WHERE id = ?").get(result.lastInsertRowid);
+
+  if (cit) {
+    return { success: true, cit};
   } else {
     return { success: false };
   }

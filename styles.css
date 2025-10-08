@@ -161,3 +161,63 @@ body{
   flex: 1;
   padding: 20px;
 }
+
+/*CITAS*/
+
+.contenedor {
+    max-width: 120rem;
+    width: 90%;
+    margin: 0 auto; 
+}
+.centrar-texto {
+    text-align: center;
+    padding: 2rem;
+    text-transform: uppercase;
+}
+.contenedor-botones{
+  display: flex;
+  justify-content:flex-end ;
+  gap: 1rem;
+}
+/*FORMULARIOS*/
+.formulario {
+    margin: auto;
+    width: 90%;
+    padding: 7rem;
+
+}
+.campo {
+    display: row;
+    flex-direction: column;
+    margin-bottom: 2rem;
+}
+.campo__label {
+    font-weight: 700;
+    padding-right: 2rem;
+    text-transform: uppercase;
+}
+.campo__field {
+    height: 2rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 0.5rem; 
+    width: 70%; 
+}
+.campo__field--textarea {
+    height: 12rem;
+}
+.boton{
+    text-align:center;
+    padding: 1rem 3rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    border: none;
+    color: white;
+    border-radius: 0.5rem; 
+    cursor: pointer;
+} 
+.boton_agregar {
+  background-color:#1E90FF;
+}
+.boton_cancelar {
+  background-color:#CC0000;
+}

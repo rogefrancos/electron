@@ -16,3 +16,8 @@ contextBridge.exposeInMainWorld('api', {
   // login es una propiedad, que nos apunta a los datos que queremos utilizar para poder pasarlos al main y usar el handle sobre ellos
   regPac: (nombre, apellidoP, apellidoM) => ipcRenderer.invoke('regPac', nombre, apellidoP, apellidoM),
 });
+
+contextBridge.exposeInMainWorld('apiCit', {
+  // regCit es una propiedad que nos apunta a los datos que queremos utilizar para poder pasarlos al main
+  regCit: (nombre, fecha, hora, nota) => ipcRenderer.invoke('regCit', nombre, fecha, hora, nota),
+});
