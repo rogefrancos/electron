@@ -1,5 +1,5 @@
 {
-  "name": "package",
+  "name": "it",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/rogefrancos/electron#readme",
   "devDependencies": {
-    "electron": "^37.6.0",
+    "electron": "^37.6.1",
     "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
