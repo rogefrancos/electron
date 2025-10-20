@@ -39,47 +39,50 @@
   </div>
 
 
-  <div class="content">
-    <form id="ingresar-usuario">
-        <label for="username">Nombre(s)</label>
-        <br>
-        <input class="pacient-form" type="text" id="nombre" required>
-        <br>
-        <label for="apellidoP">Apellido Paterno</label>
-        <br>
-        <input class="pacient-form" type="text" id="apellidoP" required>
-        <br>
-        <label for="apellidoM">Apellido Materno</label>
-        <br>
-        <input class="pacient-form" type="text" id="apellidoM" required>
-        <br>
-        <label for="fechaNac">Fecha de Nacimiento</label>
-        <br>
-        <input type="date" id="fechaNac">
-        <br>
-        <label for="genero">Genero</label>
-        <br>
-        <select name="genero" id="genero">
+  <main class="contenedor">
+    <h1 class="centrar-texto">Agregar Usuarios</h1>
+    <form id="ingresar-usuario" class="formulario">
+      <div class="campo">
+        <label class="campo__label" for="username">Nombre(s)</label>
+        <input class="campo__field" type="text" id="nombre" required>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="apellidoP">Apellido Paterno</label>
+        <input class= "campo__field" type="text" id="apellidoP" required>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="apellidoM">Apellido Materno</label>
+        <input class="campo__field" type="text" id="apellidoM" required>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="fechaNac">Fecha de Nacimiento</label>
+        <input class="campo__field" type="date" id="fechaNac">
+      </div> 
+      <div class="campo">
+        <label class="campo__label" for="genero">Genero</label>
+        <select class="select" name="genero" id="genero">
           <option value="masculino">Masculino</option>
           <option value="femenino">Femenino</option>
           <option value="39TiposdeGay">39 Tipos de Gay</option>
         </select>
-        <br>
-        Contacto 
-        <br>
-        <label for="correo">Correo Electronico</label>
-        <br>
-        <input class="pacient-form" type="email" id="email" required>
-        <br>
-        <Label for="telefono">Numero Telefonico</Label>
-        <br>
-        <input class="pacient-form" type="text" id="telefono" minlength="10" maxlength="101" required>
-        <br>
-        <button type="submit" id="btn-agg-pac">Agregar</button>
-        <p id="result-reg-pac">a</p>
+      </div>
+      <div class="campo">
+        <label class="campo__label" for="correo">Correo Electronico</label>
+        <input class="campo__field" type="email" id="email" required>
+      </div>
+      <div class="campo">
+        <Label class="campo__label" for="telefono">Numero Telefonico</Label>
+        <input class="campo__field" type="text" id="telefono" minlength="10" maxlength="101" required>
+      </div>
+      <div class="contenedor-botones">
+        <button type="submit" id="btn-agg-pac" class="boton boton_agregar">Agregar</button>
+        <input type="reset" id="cancelar" value="Cancelar" class="boton boton_cancelar"> 
+        <p id="result-reg-pac"></p>
+      </div>
+      
 
     </form>
-  </div>
+  </main>
   <script src="rendered.js"></script>
 </body>
 </html>

@@ -82,3 +82,12 @@ if (toggleBtn && sidebar) {
         sidebar.classList.toggle("collapsed");
     });
 }
+
+// Funcion para que el boton de cancelar borre todo
+const btnReset = document.querySelector('#ingresar.citas input[type="reset"]');
+
+btnReset.addEventListener('click', function (e){
+        e.preventDefault();
+        
+        resetFormulario();
+});

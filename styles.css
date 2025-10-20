@@ -14,7 +14,7 @@ a{
 }
 
 a:hover{
-    color: lightseagreen;
+    color: black;
 }
 
 body{
@@ -104,10 +104,13 @@ body{
 .sidebar {
   width: 200px;
   transition: width 0.3s;
-  background-color:lightseagreen;
+  background-color: lightseagreen;
   height: 100vh;
-  overflow: hidden;
   color: white;
+  position: fixed;
+  top: 0; 
+  left: 0; 
+  overflow-y: auto;
 }
 
 .sidebar.collapsed {
@@ -156,18 +159,12 @@ body{
   stroke: white; /* forces the stroke color */
 }
 
-/* Main content */
-.content {
-  flex: 1;
-  padding: 20px;
-}
-
 /*CITAS*/
 
 .contenedor {
     max-width: 120rem;
     width: 90%;
-    margin: 0 auto; 
+    margin-left: 200px;
 }
 .centrar-texto {
     text-align: center;
@@ -183,7 +180,7 @@ body{
 .formulario {
     margin: auto;
     width: 90%;
-    padding: 7rem;
+    padding: 4rem;
 
 }
 .campo {
@@ -201,9 +198,16 @@ body{
     border: 1px solid #D4D4D4;
     border-radius: 0.5rem; 
     width: 70%; 
+    padding: 20px;
 }
 .campo__field--textarea {
     height: 12rem;
+}
+.select {
+    height: 2rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 0.5rem; 
+    width: 70%; 
 }
 .boton{
     text-align:center;
@@ -216,7 +220,7 @@ body{
     cursor: pointer;
 } 
 .boton_agregar {
-  background-color:#1E90FF;
+  background-color:lightseagreen;
 }
 .boton_cancelar {
   background-color:#CC0000;
