@@ -225,6 +225,7 @@ body{
 .boton_cancelar {
   background-color:#CC0000;
 }
+
 /*Mensajes de alerta*/
 .error{
     text-align: center;
@@ -235,4 +236,11 @@ body{
     padding: 10px;
     margin-top: 5px;
 }
-
+.select {
+    background-color: white; /* Fondo blanco */
+    color: #333; /* Color de texto negro/gris oscuro */
+    
+    /* Altura y Espaciado */
+    height: 2.5rem; /* Ajusta la altura si es necesario */
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+}
