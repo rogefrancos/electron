@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld('api', {
   // proceso para registrar pacientes
   contextBridge.exposeInMainWorld('apiPac', {
   // login es una propiedad, que nos apunta a los datos que queremos utilizar para poder pasarlos al main y usar el handle sobre ellos
-  regPac: (nombre, apellidoP, apellidoM) => ipcRenderer.invoke('regPac', nombre, apellidoP, apellidoM),
+  regPac: (nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono) => ipcRenderer.invoke('regPac', nombre, apellidoP, apellidoM,  genero, fechaNac, correo, telefono),
 });
 
 contextBridge.exposeInMainWorld('apiCit', {

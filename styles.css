@@ -87,17 +87,43 @@ body{
 }
 
 /*Elementos Pacientes*/
+
+
 .pacient-form{
   width: 30% ;
+}
+
+#ingresar-usuario p{
+  font-size: 20px;
+  color: rgb(100, 100, 100);
+}
+
+.contenedor-peq{
+  display: grid;
+  grid-template-columns: auto auto;
+  width: 30% ;
+}
+
+
+#ingresar-usuario{
+  display: grid;
+  grid-template-columns: auto;
+}
+
+#ingresar-usuario > *{
+  margin: 3px;
+  padding: 3px;
 }
 
 #btn-agg-pac{
   background-color: lightseagreen;
   width: 30% ;
-  padding: 3px;
+  padding: 5px;
   border-width: 0px;
   border-color: lightgray;
+  margin-top: 5%;
 }
+
 
 /*Example for the side bar*/
 /* Sidebar */
@@ -142,6 +168,11 @@ body{
   opacity: 0;
   width: 0;
   overflow: hidden;
+}
+
+.sidebar a{
+  font-size: 15px;
+  margin-left: 0px;
 }
 
 /* Toggle button */

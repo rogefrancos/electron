@@ -24,15 +24,25 @@ if(pacForm){
     const nombre = document.getElementById('nombre').value;
     const apellidoP = document.getElementById('apellidoP').value;
     const apellidoM = document.getElementById('apellidoM').value;
+    const genero = document.getElementById('fechaNac').value;
+    const fechaNac = document.getElementById('fechaNac').value;
+    const correo = document.getElementById('email').value;
+    const telefono = document.getElementById('telefono').value;
 
-    const result = await window.apiPac.regPac(nombre, apellidoP, apellidoM);
+    // faltan todos desde genero
+
+    const result = await window.apiPac.regPac(nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono);
 
     if (result.success) {
       document.getElementById('result-reg-pac').textContent = 
         'id: ' + result.pac.id + 
         ' nombre: ' + result.pac.nombre + 
         ' ' + result.pac.apellidoP + 
-        ' ' + result.pac.apellidoM;
+        ' ' + result.pac.apellidoM +
+        ' ' + result.pac.genero +
+        ' ' + result.pac.fechaNac + 
+        ' ' + result.pac.correo + 
+        ' ' + result.pac.telefono; 
     } else {
       document.getElementById('result-reg-pac').textContent = 'hubo un error al registrar';
     }

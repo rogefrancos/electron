@@ -26,7 +26,11 @@ db.prepare(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre TEXT,
     apellidoP TEXT,
-    apellidoM TEXT
+    apellidoM TEXT,
+    genero TEXT,
+    fechaNac DATE,
+    correo TEXT,
+    telefono TEXT
 )
     `
 ).run();
@@ -54,8 +58,8 @@ db.prepare(`
 `).run('admin', '1234', 'admin');
 
 db.prepare(`
-  INSERT OR IGNORE INTO pacient (nombre, apellidoP, apellidoM) VALUES (?, ?, ?)
-`).run('Rogelio', 'Franco', 'Sanchez');
+  INSERT OR IGNORE INTO pacient (nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono) VALUES (?, ?, ?, ?, ?, ?, ?)
+`).run('Rogelio', 'Franco', 'Sanchez', 'masculino', '2005-03-11', 'rogefs04@gmail.com', '4612523244');
 
 const citasCount = db.prepare("SELECT COUNT(*) AS count FROM citas").get();
 
@@ -99,12 +103,12 @@ ipcMain.handle('login', (event, username, password) => {
 
 // logica de registro de pacientes
 
-ipcMain.handle('regPac', (event, nombre, apellidoP, apellidoM) => {
+ipcMain.handle('regPac', (event, nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono) => {
 
   // se escribe el query para insertar los datos que metimos en el form
   const result = db.prepare(`
-    INSERT INTO pacient (nombre, apellidoP, apellidoM) VALUES (?, ?, ?)
-  `).run(nombre, apellidoP, apellidoM);
+    INSERT INTO pacient (nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono) VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono);
 
   // const query2 = db.prepare(`SELECT * FROM pacient WHERE nombre = ? AND apellidoP = ? AND apellidoM = ?`);
 

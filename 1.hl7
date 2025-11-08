@@ -1,0 +1,5 @@
+MSH|^~\\&|Analyzer3000|MainLab|ClinicLIS|HospitalUAQ|202510200830||ORU^R01|12345|P|2.3
+PID|1||0012456||Franco^Rogelio||20050311|M|||Querétaro^^MX
+OBR|1||20251020-01|CHEM^Química sanguínea|||202510200800
+OBX|1|NM|GLU^Glucosa sérica||92|mg/dL|70-110|N|||F
+OBX|2|NM|UREA^Urea||34|mg/dL|10-50|N|||F
