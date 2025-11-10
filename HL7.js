@@ -62,7 +62,6 @@ function parseHL7(message) {
         break;
 
       default:
-        // Unknown segment, just skip
         break;
     }
   }
@@ -70,7 +69,4 @@ function parseHL7(message) {
   return result;
 }
 
-console.log(parseHL7(message));
-
-// Export for use in other files
 module.exports = { parseHL7 };
