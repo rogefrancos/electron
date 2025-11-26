@@ -42,54 +42,103 @@
       <span class="icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path> </g></svg></span>
       <span class="text">Citas</span>
     </a>
+
+    <a href="user.html" class="sidebar-item">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9ZM12 20.5C13.784 20.5 15.4397 19.9504 16.8069 19.0112C17.4108 18.5964 17.6688 17.8062 17.3178 17.1632C16.59 15.8303 15.0902 15 11.9999 15C8.90969 15 7.40997 15.8302 6.68214 17.1632C6.33105 17.8062 6.5891 18.5963 7.19296 19.0111C8.56018 19.9503 10.2159 20.5 12 20.5Z" fill="#ffffff"></path> </g></svg>
+      </span>
+      <span class="text">Usuario</span>
+    </a>
   </div>
+ <main class="contenedor">
+    <h1 class="centrar-texto">Pacientes</h1>
 
+    <!-- Form crear paciente -->
+    <section class="pacient-form" style="max-width:900px;">
+      <h2>Crear paciente</h2>
+      <form id="create-pac-form" class="formulario">
+        <div class="campo">
+          <label class="campo__label" for="p-nombre">Nombre</label>
+          <input id="p-nombre" class="campo__field" required />
+        </div>
 
-  <main class="contenedor">
-    <h1 class="centrar-texto">Agregar Usuarios</h1>
-    <form id="ingresar-usuario" class="formulario">
-      <div class="campo">
-        <label class="campo__label" for="username">Nombre(s)</label>
-        <input class="campo__field" type="text" id="nombre" required>
-      </div>
-      <div class="campo">
-        <label class="campo__label" for="apellidoP">Apellido Paterno</label>
-        <input class= "campo__field" type="text" id="apellidoP" required>
-      </div>
-      <div class="campo">
-        <label class="campo__label" for="apellidoM">Apellido Materno</label>
-        <input class="campo__field" type="text" id="apellidoM" required>
-      </div>
-      <div class="campo">
-        <label class="campo__label" for="fechaNac">Fecha de Nacimiento</label>
-        <input class="campo__field" type="date" id="fechaNac">
-      </div> 
-      <div class="campo">
-        <label class="campo__label" for="genero">Genero</label>
-        <select class="select" name="genero" id="genero">
-          <option value="masculino">Masculino</option>
-          <option value="femenino">Femenino</option>
-          <option value="39TiposdeGay">39 Tipos de Gay</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label class="campo__label" for="correo">Correo Electronico</label>
-        <input class="campo__field" type="email" id="email" required>
-      </div>
-      <div class="campo">
-        <Label class="campo__label" for="telefono">Numero Telefonico</Label>
-        <input class="campo__field" type="text" id="telefono" minlength="10" maxlength="101" required>
-      </div>
-      <div class="contenedor-botones">
-        <button type="submit" id="btn-agg-pac" class="boton boton_agregar">Agregar</button>
-        <input type="reset" id="cancelar" value="Cancelar" class="boton boton_cancelar"> 
-        <p id="result-reg-pac"></p>
-      </div>
-      
+        <div class="campo">
+          <label class="campo__label" for="p-apellidoP">Apellido Paterno</label>
+          <input id="p-apellidoP" class="campo__field" required />
+        </div>
 
-    </form>
+        <div class="campo">
+          <label class="campo__label" for="p-apellidoM">Apellido Materno</label>
+          <input id="p-apellidoM" class="campo__field" />
+        </div>
+
+        <div class="campo">
+          <label class="campo__label" for="p-genero">Género</label>
+          <select id="p-genero" class="select">
+            <option value="">-- Selecciona --</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="39 tipos de gay">39 tipos de gay</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="campo__label" for="p-fechaNac">Fecha Nacimiento (YYYY-MM-DD)</label>
+          <input id="p-fechaNac" class="campo__field" placeholder="2025-08-18" />
+        </div>
+
+        <div class="campo">
+          <label class="campo__label" for="p-correo">Correo</label>
+          <input id="p-correo" class="campo__field" type="email" placeholder="correo@ejemplo.com" />
+        </div>
+
+        <div class="campo">
+          <label class="campo__label" for="p-telefono">Teléfono</label>
+          <input id="p-telefono" class="campo__field" type="tel" placeholder="10 dígitos" />
+        </div>
+
+        <div class="campo campo--full" style="margin-top:8px;">
+          <button type="submit" class="boton boton_agregar">Crear paciente</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Buscador + lista -->
+    <section class="pacient-form" style="max-width:900px; margin-top:16px;">
+      <h2>Buscar / Gestionar pacientes</h2>
+
+      <div class="patient-search-wrapper" style="margin-bottom:12px;">
+        <label class="campo__label" for="patient-search-input">Buscar paciente</label>
+        <input id="patient-search-input" class="campo__field" placeholder="Escribe nombre o apellido..." autocomplete="off" />
+        <div id="patient-autocomplete" class="autocomplete-list" role="listbox" aria-hidden="true"></div>
+      </div>
+
+      <div id="patients-status" class="users-status" style="display:none"></div>
+
+      <div class="users-table-wrapper">
+        <table id="patients-table" class="users-table" role="grid" aria-label="Lista de pacientes">
+          <colgroup>
+            <col class="col-id" />
+            <col class="col-username" />
+            <col class="col-role" />
+            <col class="col-actions" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre completo</th>
+              <th>Teléfono</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
   </main>
+  
   <script src="rendered.js"></script>
+  <script src="renderedPacients.js"></script>
   <script src="pacients.js"></script>
 </body>
 </html>

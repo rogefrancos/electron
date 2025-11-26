@@ -124,6 +124,153 @@ body{
   margin-top: 5%;
 }
 
+/* Pacientes / autocomplete & table */
+.patient-search-wrapper { position: relative; max-width: 600px; margin-bottom:12px; }
+.autocomplete-list { display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border:1px solid #e6e6e6; border-radius:6px; z-index:30; max-height:220px; overflow-y:auto; padding:6px; }
+.autocomplete-item { display:flex; justify-content:space-between; gap:8px; padding:8px; cursor:pointer; border-radius:4px; }
+.autocomplete-item:hover, .autocomplete-item.active { background:#f2fbf7; }
+.users-table, .users-table th, .users-table td { /* ensure table uses fixed layout and full-width inputs */ }
+.users-table input, .users-table select, .campo__field { width:100% !important; box-sizing:border-box; }
+
+/* Pacients form & table fixes
+   Añade al final de tu styles.css o en la sección correspondiente.
+   Evita que los campos se "apachurren" y hace el formulario responsivo.
+*/
+
+/* Contenedor de cada sección de paciente */
+.pacient-form {
+  width: 100%;
+  max-width: 900px;     /* evita que ocupe más espacio que el área principal */
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 12px;
+  background: #fff;
+  border-radius: 6px;
+}
+
+/* Formulario: grid responsivo que adapta columnas según ancho */
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px 18px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 0;
+}
+
+/* Campo individual: label arriba y control debajo (por accesibilidad y consistencia) */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Opción para forzar que un campo ocupe toda la fila (por ejemplo textarea o botones) */
+.campo--full {
+  grid-column: 1 / -1;
+}
+
+/* Labels */
+.campo__label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #222;
+}
+
+/* Inputs / selects / textareas */
+.campo__field,
+.select,
+input[type="text"],
+input[type="password"],
+input[type="date"],
+input[type="tel"],
+input[type="email"] {
+  width: 100% !important;
+  min-width: 0; /* importante para que el grid calcule bien */
+  padding: 10px 12px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+/* Ajuste para inputs en celda con varios campos (fecha+hora por ejemplo) */
+.multi-input {
+  display: flex;
+  gap: 8px;
+  flex-direction: row;
+}
+.multi-input .campo__field { flex: 1; }
+
+/* Botón de submit: ocupa la fila completa y se alinea a la derecha por defecto */
+.formulario .boton[type="submit"],
+.formulario .boton {
+  width: auto;
+}
+
+/* Tabla de pacientes: evita compresión y permite scroll horizontal si hace falta */
+.users-table-wrapper {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.users-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  min-width: 720px; /* si la pantalla es más angosta, aparecerá scroll */
+}
+
+.users-table th,
+.users-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  word-wrap: break-word;
+}
+
+/* Colgroup helper (ajusta porcentajes si quieres) */
+.users-table col.col-id { width: 8%; }
+.users-table col.col-username { width: 50%; }
+.users-table col.col-role { width: 20%; }
+.users-table col.col-actions { width: 22%; }
+
+/* Asegura inputs dentro de tablas ocupen el ancho disponible */
+.users-table input,
+.users-table select {
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+}
+
+/* Autocomplete / search wrapper (pacientes) */
+.patient-search-wrapper {
+  position: relative;
+  max-width: 600px;
+}
+
+/* Responsive tweaks: asegurar que en pantallas pequeñas los campos ocupen toda la fila */
+@media (max-width: 640px) {
+  .formulario {
+    grid-template-columns: 1fr; /* una sola columna en móvil */
+    gap: 10px;
+  }
+  .users-table { min-width: 560px; }
+}
+
+/* Evita que la sidebar solape contenido (si tu .contenedor ya aplica margin-left, no es necesario).
+   Ajusta el valor si la sidebar cambia de ancho. */
+.contenedor {
+  box-sizing: border-box;
+  padding-bottom: 24px;
+}
+
+/* Pequeño helper para esconder elementos */
+.hidden { display: none !important; }
 
 /* Sidebar */
 .sidebar {
@@ -214,6 +361,193 @@ body{
   justify-content:flex-end ;
   gap: 1rem;
 }
+
+/* Citas / tables
+   Añade esta sección al final de tu styles.css (o donde agrupes secciones).
+   Proporciona layout fijo para la tabla, padding consistente y hace inputs/controls "100% width".
+*/
+
+.citas-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Reutiliza el contenedor con scroll si la tabla excede ancho */
+.citas-table-wrapper {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+/* Reuse users-table styles if present, otherwise define equivalent */
+.citas-table,
+.users-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+}
+
+.citas-table th,
+.citas-table td,
+.users-table th,
+.users-table td {
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f0f0;
+  word-wrap: break-word;
+}
+
+/* todays-citas
+   Estilos para el widget "Citas para hoy" en la landing.
+   Añade esto al final de styles.css
+*/
+
+.todays-citas-section {
+  max-width: 900px;
+  margin: 1rem auto;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  position: relative;
+  z-index: 2; /* aseguramos que quede sobre contenido de fondo */
+}
+
+/* Si tu layout usa .contenedor con margin-left para la sidebar, no necesitamos margin-left aquí.
+   Si por alguna razón el section está fuera de .contenedor, ajusta con .todays-citas-section { margin-left: 220px; } */
+
+/* Tabla compacta para el widget */
+/* Patch: evitar solapamiento con sidebar y quitar z-index */
+.todays-citas-section {
+  /* Si tu sidebar tiene 200px, dejamos margen lateral equivalente.
+     Ajusta a 60px si usas la versión colapsada. */
+  margin-left: 220px;
+  max-width: calc(100% - 240px);
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  position: relative;
+  /* quitar z-index para no competir con sidebar */
+  z-index: auto;
+}
+
+/* Si la app soporta sidebar colapsable, añade regla responsiva */
+@media (max-width: 900px) {
+  .todays-citas-section {
+    margin-left: 16px;
+    max-width: calc(100% - 32px);
+  }
+}
+
+.todays-citas-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-top: 8px;
+}
+
+.todays-citas-table th,
+.todays-citas-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #f3f3f3;
+  word-wrap: break-word;
+}
+
+.todays-citas-table td.time {
+  width: 18%;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.todays-citas-table td.name {
+  width: 50%;
+}
+
+.todays-citas-table td.note {
+  width: 32%;
+  color: #666;
+  font-size: 0.95em;
+}
+
+/* Mensaje cuando no hay citas: ocupando toda la fila */
+.todays-empty {
+  padding: 12px;
+  color: #666;
+  text-align: center;
+}
+
+/* Responsive: si la tabla necesita scroll horizontal en pantallas pequeñas */
+.todays-citas-wrapper {
+  overflow-x: auto;
+}
+
+/* Colgroup helper classes (adjust percentages as you like) */
+.citas-table col.col-id,
+.users-table col.col-id { width: 8%; }
+.citas-table col.col-username,
+.users-table col.col-username { width: 42%; }
+.citas-table col.col-role,
+.users-table col.col-role { width: 20%; }
+.citas-table col.col-actions,
+.users-table col.col-actions { width: 30%; }
+
+/* Inputs/selects dentro de la tabla y formularios deben ocupar todo el ancho */
+.citas-table input,
+.citas-table select,
+.users-table input,
+.users-table select,
+.create-cita-form .campo__field,
+.create-user-form .campo__field {
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: 8px;
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+}
+
+/* Espacio entre inputs en la misma celda */
+.citas-table .multi-input {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+/* Botones de acción */
+.citas-table .edit-cita,
+.citas-table .del-cita,
+.users-table .save-user-btn,
+.users-table .cancel-edit-btn {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+/* Estado / mensajes */
+.citas-status, .users-status {
+  display: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: #e9f7f1;
+  color: #084;
+  font-weight: 600;
+}
+
+/* Ajustes responsive */
+@media (max-width: 800px) {
+  .citas-table col.col-username { width: 45%; }
+  .citas-table col.col-role { width: 20%; }
+  .citas-table col.col-actions { width: 35%; }
+  .contenedor { width: 95%; }
+}
+
 /*FORMULARIOS*/
 .formulario {
     width: 100%;
@@ -284,4 +618,115 @@ body{
 .contenedor{
   padding: 1%;
   align-content: center;
+}
+
+/* users
+   Estilos específicos para la sección de gestión de usuarios.
+   Añade esta sección al final de tu styles.css (o donde agrupes secciones).
+*/
+
+.users-section {
+  /* reutilizamos .pacient-form para el padding y tamaño general */
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Mensaje de estado no intrusivo */
+.users-status {
+  display: none;              /* se muestra dinámicamente desde JS */
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: #e9f7f1;
+  color: #084;
+  font-weight: 600;
+}
+
+/* Contenedor con scroll horizontal si la tabla excede ancho */
+.users-table-wrapper {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+/* Tabla con layout fijo para controlar anchos de columna */
+.users-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+}
+
+/* Colgroup helper classes */
+.users-table col.col-id { width: 8%; }
+.users-table col.col-username { width: 42%; }
+.users-table col.col-role { width: 20%; }
+.users-table col.col-actions { width: 30%; }
+
+.users-table th,
+.users-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f0f0;
+  word-wrap: break-word;
+}
+
+/* Asegura inputs y selects dentro de la tabla ocupen todo el ancho disponible */
+.users-table input.edit-username,
+.users-table input.edit-password,
+.users-table select.edit-role,
+.users-table .campo__field,
+.users-table .select {
+  width: 100% !important;
+  box-sizing: border-box;
+  padding: 8px;
+  height: auto;
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+}
+
+/* Botones de acción en fila de edición */
+.users-table .save-user-btn,
+.users-table .cancel-edit-btn {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+
+/* Actions cell: botones alineados en fila */
+.users-table td .actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Estado oculto reutilizable */
+.hidden {
+  display: none !important;
+}
+
+/* Estilo del formulario de creación (usa tus clases ya definidas) */
+.create-user-form .campo__field,
+.create-user-form .select {
+  width: 100%;      /* en formulario de creación ocupan todo el ancho */
+  padding: 10px;
+}
+
+/* Espaciado para el bloque de creación */
+.create-user-form {
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #ffffff;
+  margin-bottom: 16px;
+}
+
+/* Ajustes responsive */
+@media (max-width: 800px) {
+  .users-table col.col-username { width: 45%; }
+  .users-table col.col-role { width: 20%; }
+  .users-table col.col-actions { width: 35%; }
+  .contenedor { width: 95%; }
 }

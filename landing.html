@@ -41,15 +41,35 @@
       <span class="icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 21H17.8C18.9201 21 19.4802 21 19.908 20.782C20.2843 20.5903 20.5903 20.2843 20.782 19.908C21 19.4802 21 18.9201 21 17.8V8.2C21 7.07989 21 6.51984 20.782 6.09202C20.5903 5.71569 20.2843 5.40973 19.908 5.21799C19.4802 5 18.9201 5 17.8 5H6.2C5.0799 5 4.51984 5 4.09202 5.21799C3.71569 5.40973 3.40973 5.71569 3.21799 6.09202C3 6.51984 3 7.07989 3 8.2V17.8C3 18.9201 3 19.4802 3.21799 19.908C3.40973 20.2843 3.71569 20.5903 4.09202 20.782C4.51984 21 5.07989 21 6.2 21Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round"></path> </g></svg></span>
       <span class="text">Citas</span>
     </a>
+
+    <a href="user.html" class="sidebar-item">
+      <span class="icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM15 9C15 10.6569 13.6569 12 12 12C10.3431 12 9 10.6569 9 9C9 7.34315 10.3431 6 12 6C13.6569 6 15 7.34315 15 9ZM12 20.5C13.784 20.5 15.4397 19.9504 16.8069 19.0112C17.4108 18.5964 17.6688 17.8062 17.3178 17.1632C16.59 15.8303 15.0902 15 11.9999 15C8.90969 15 7.40997 15.8302 6.68214 17.1632C6.33105 17.8062 6.5891 18.5963 7.19296 19.0111C8.56018 19.9503 10.2159 20.5 12 20.5Z" fill="#ffffff"></path> </g></svg>
+      </span>
+      <span class="text">Usuario</span>
+    </a>
   </div>
 
+  <section id="todays-citas-section" class="todays-citas-section">
+    <h2>Citas para hoy</h2>
 
-
-  <div class="contenedor">
-    <h1>Bienvenido</h1>
-    <p>Este es tu panel de laboratorio.</p>
-  </div>
-
+    <div class="todays-citas-wrapper" id="todays-citas-wrapper">
+      <table class="todays-citas-table" id="todays-citas-table" aria-label="Citas para hoy">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Nombre</th>
+            <th>Nota</th>
+          </tr>
+        </thead>
+        <tbody id="todays-citas-body">
+          <!-- El renderer rellenará filas. Si está vacío, se mostrará un row con "No hay citas para hoy". -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <script src="renderedHome.js"></script>
   <script src="rendered.js"></script>
 </body>
 </html>
