@@ -23,6 +23,7 @@
     "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.4.6",
     "pdfkit": "^0.17.2"
   }

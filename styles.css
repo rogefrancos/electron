@@ -274,10 +274,14 @@ body{
     margin-top: 5px;
 }
 .select {
-    background-color: white; /* Fondo blanco */
-    color: #333; /* Color de texto negro/gris oscuro */
-    
-    /* Altura y Espaciado */
-    height: 2.5rem; /* Ajusta la altura si es necesario */
+    background-color: white;
+    color: #333; 
+    height: 2.5rem;
     padding: 0.5rem 2.5rem 0.5rem 1rem;
+}
+
+/* Resultados */
+.contenedor{
+  padding: 1%;
+  align-content: center;
 }
