@@ -488,3 +488,17 @@ ipcMain.handle('open-external-url', async (event, url) => {
     return { success: false, error: String(err) };
   }
 });
+
+// Add this handler to your existing main.js (near other ipcMain handlers).
+// It reveals a file in the OS file explorer (so user can attach the generated PDF).
+ipcMain.handle('reveal-file', async (event, filePath) => {
+  try {
+    if (!filePath) return { success: false, error: 'No file path provided' };
+    // showItemInFolder will open the folder and select the file on most platforms
+    shell.showItemInFolder(filePath);
+    return { success: true };
+  } catch (err) {
+    console.error('[main] reveal-file error:', err);
+    return { success: false, error: String(err) };
+  }
+});

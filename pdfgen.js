@@ -2,15 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 
-/**
- * generatePDF(parsedHL7, outputPath) -> Promise<string>
- * - parsedHL7: object parsed by your HL7 parser
- * - outputPath: full path where PDF will be written (required)
- *
- * Returns a Promise that resolves with the outputPath on success or rejects with an Error.
- */
 function generatePDF(parsedHL7, outputPath) {
   return new Promise((resolve, reject) => {
+    //Validacion inicial
     if (!outputPath) {
       return reject(new Error('outputPath is required for generatePDF'));
     }
@@ -18,18 +12,18 @@ function generatePDF(parsedHL7, outputPath) {
     try {
       console.log('[pdfgen] Starting PDF generation to:', outputPath);
 
-      // Ensure directory exists
+      // Verificar o crear el directorio donde se guardara el PDF
       const dir = path.dirname(outputPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
         console.log('[pdfgen] Created directory:', dir);
       }
-
+      // Crea el documento PDF y stream de escritura
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
       const stream = fs.createWriteStream(outputPath);
 
       let finished = false;
-      // Safety timeout (in case stream never finishes): 30s
+      // Tiempo maximo permitido por seguridad (30s)
       const timeoutMs = 30000;
       const timer = setTimeout(() => {
         if (!finished) {
@@ -39,7 +33,8 @@ function generatePDF(parsedHL7, outputPath) {
         }
       }, timeoutMs);
 
-      // Stream event handling
+      // Eventos del stream del PDF
+      //Cuando termina la escritura correctamente
       stream.on('finish', () => {
         finished = true;
         clearTimeout(timer);
@@ -47,7 +42,7 @@ function generatePDF(parsedHL7, outputPath) {
         resolve(outputPath);
       });
 
-      // Sometimes 'close' fires instead of 'finish'
+      // Algunos sitemas llaman "close" en lugar de "finish"
       stream.on('close', () => {
         if (!finished) {
           finished = true;
@@ -56,28 +51,28 @@ function generatePDF(parsedHL7, outputPath) {
           resolve(outputPath);
         }
       });
-
+      // Si ocurre un error de escritura
       stream.on('error', (err) => {
         clearTimeout(timer);
         console.error('[pdfgen] Stream error:', err);
         reject(err);
       });
 
-      // Pipe doc to stream
+      // Conectar PDFKit al stream
       doc.pipe(stream);
 
-      // Begin content (kept similar to previous prettier layout)
+      // Comienza escritura del contenido del PDF
       try {
         const titleFontSize = 18;
         const headingFontSize = 13;
         const textFontSize = 11;
         const leftX = doc.page.margins.left;
         const usableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-
+        // Titulo principal del PDF
         doc.font('Helvetica-Bold').fontSize(titleFontSize).text("Laboratory Results Report", { align: "center" });
         doc.moveDown(1);
 
-        // Message header
+        // Seccion de informacion general del mensaje HL7
         doc.fontSize(headingFontSize).fillColor('#333').text("Message Information", { underline: true });
         doc.moveDown(0.3);
         doc.font('Helvetica').fontSize(textFontSize).fillColor('#000');
@@ -87,35 +82,37 @@ function generatePDF(parsedHL7, outputPath) {
         doc.text(`Message Type: ${parsedHL7.header?.messageType || "N/A"}`);
         doc.moveDown();
 
-        // Patient boxed section
+        // Seccion de informacion del paciente
         const p = parsedHL7.patient || {};
         const o = parsedHL7.order || {};
-
+        //Coordenadas del recuadro 
         const boxTop = doc.y;
         const boxHeight = 80;
         doc.rect(leftX - 2, boxTop - 4, usableWidth + 4, boxHeight).stroke('#CCCCCC');
-
+        //Dibujar borde
         doc.fontSize(headingFontSize).font('Helvetica-Bold').text("Patient Information", leftX, boxTop);
         doc.moveDown(0.3);
         doc.fontSize(textFontSize).font('Helvetica');
 
         const patientInfoTop = doc.y;
+        //Columnas dentro del recuadro
         const col1x = leftX;
         const col2x = leftX + (usableWidth / 2);
-
+        //Columna izquierda
         doc.text(`Patient ID: `, col1x, patientInfoTop, { continued: true }).font('Helvetica-Bold').text(`${p.id || 'N/A'}`).font('Helvetica');
         doc.moveDown(0.2);
         doc.text(`Name: `, { continued: true }).font('Helvetica-Bold').text(`${(p.firstName || '')} ${(p.lastName || '')}`.trim() || 'N/A').font('Helvetica');
         doc.moveDown(0.2);
 
         const currentY = doc.y;
+        //Columna derecha
         doc.text(`Birth Date: `, col2x, patientInfoTop, { continued: true }).font('Helvetica-Bold').text(`${p.birthDate || 'N/A'}`).font('Helvetica');
         doc.moveDown(0.2);
         doc.text(`Gender: `, col2x, doc.y, { continued: true }).font('Helvetica-Bold').text(`${p.gender || 'N/A'}`).font('Helvetica');
 
         doc.moveDown(2);
 
-        // Order info
+        // Informacion de la orden
         doc.fontSize(headingFontSize).font('Helvetica-Bold').text("Order Information");
         doc.moveDown(0.3);
         doc.fontSize(textFontSize).font('Helvetica');
@@ -124,12 +121,13 @@ function generatePDF(parsedHL7, outputPath) {
         doc.text(`Date/Time: ${o.dateTime || 'N/A'}`);
         doc.moveDown();
 
-        // Observations as table
+        // Tabla de observaciones
         doc.fontSize(headingFontSize).font('Helvetica-Bold').text("Observations");
         doc.moveDown(0.3);
         doc.font('Helvetica').fontSize(textFontSize);
 
         const tableX = leftX;
+        //Tamano de columnas
         const colWidths = {
           name: Math.floor(usableWidth * 0.4),
           value: Math.floor(usableWidth * 0.15),
@@ -137,6 +135,7 @@ function generatePDF(parsedHL7, outputPath) {
           ref: Math.floor(usableWidth * 0.2),
           flag: usableWidth - (Math.floor(usableWidth * 0.4) + Math.floor(usableWidth * 0.15) + Math.floor(usableWidth * 0.12) + Math.floor(usableWidth * 0.2))
         };
+        //Encabezado de la tabla
         const headerY = doc.y;
         doc.font('Helvetica-Bold');
         doc.text('Name', tableX, headerY, { width: colWidths.name });
@@ -146,9 +145,10 @@ function generatePDF(parsedHL7, outputPath) {
         doc.text('Flag', tableX + colWidths.name + colWidths.value + colWidths.unit + colWidths.ref, headerY, { width: colWidths.flag, align: 'left' });
         doc.moveDown(0.6);
         doc.font('Helvetica');
-
+        //Filas
         parsedHL7.observations = parsedHL7.observations || [];
         parsedHL7.observations.forEach((obs) => {
+          //Si no cabe mas en la pagina crea una nueva
           if (doc.y > doc.page.height - doc.page.margins.bottom - 60) {
             doc.addPage();
           }
@@ -161,20 +161,21 @@ function generatePDF(parsedHL7, outputPath) {
           doc.moveDown(0.8);
         });
 
-        // Footer
+        // pie de pagina
         doc.moveDown(2);
         doc.fontSize(9).fillColor('#666').text("Generated automatically from HL7 data", { align: "center" });
 
-        // End doc
+        // finalizar PDF
         doc.end();
 
         console.log('[pdfgen] doc.end() called, waiting for stream to finish...');
       } catch (err) {
+        //Si ocurrio un error mientras se generaba el contenido
         clearTimeout(timer);
         console.error('[pdfgen] Error while adding content to PDF:', err);
-        // Close doc/stream safely
-        try { doc.end(); } catch (e) { /* ignore */ }
-        try { stream.close(); } catch (e) { /* ignore */ }
+        //Intentar cerrar correctamente
+        try { doc.end(); } catch (e) {  }
+        try { stream.close(); } catch (e) {  }
         reject(err);
       }
     } catch (err) {

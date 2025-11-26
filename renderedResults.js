@@ -1,270 +1,274 @@
-// Client-side logic for Results page: file input, native open dialog, patient selector, generate PDF, send WhatsApp.
+// renderer/results-status.js
+// Same as before but with a more robust WhatsApp handler and debug logs.
+// It will try to use the stored phone (last 10 digits by default) and open wa.me correctly.
 
-(function () {
-  const statusMessage = document.getElementById('status-message');
-  const reportLinkBlock = document.getElementById('report-link');
-  const reportPathAnchor = document.getElementById('report-path');
-
-  const fileInput = document.getElementById('hl7file');
+(async function () {
+  const hl7Input = document.getElementById('hl7file');
   const generateBtn = document.getElementById('generate-pdf-btn');
-  const openNativeBtn = document.getElementById('open-native-btn');
-  const sendWhatsBtn = document.getElementById('send-whatsapp-btn');
-
+  const reportLinkP = document.getElementById('report-link');
+  const reportPathA = document.getElementById('report-path');
+  const statusMessage = document.getElementById('status-message');
   const patientSelect = document.getElementById('patient-select');
   const patientPhoneP = document.getElementById('patient-phone');
+  const sendWhatsAppBtn = document.getElementById('send-whatsapp-btn');
+  const sendEmailBtn = document.querySelector('.send-email');
 
-  let hl7Content = null;
-  let hl7Filename = null;
-  let lastGenerated = { path: null, filename: null };
+  let lastGeneratedPdf = null;
 
-  // Utility: format timestamp YYYYMMDD_HHMM
-  function formatTimestamp(date) {
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${date.getFullYear()}${pad(date.getMonth()+1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}`;
+  function setStatus(msg) {
+    if (!statusMessage) return;
+    statusMessage.textContent = msg;
+    statusMessage.style.color = '#084';
   }
 
-  // Sanitize for filename (similar to main.js but client-side)
-  function sanitizeForFilename(s) {
-    if (!s) return 'report';
-    return s.normalize('NFKD').replace(/[\u0300-\u036F]/g, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim().replace(/\s+/g, '_');
+  function sanitizeName(n) {
+    if (!n) return null;
+    return String(n)
+      .normalize('NFKD').replace(/[\u0300-\u036F]/g, '')
+      .replace(/[^a-zA-Z0-9 _-]/g, '')
+      .trim()
+      .replace(/\s+/g, '_') || null;
   }
 
-  // Load patients from DB to selector
-  async function loadPatients() {
-    const res = await window.apiResults.getPatients();
-    if (!res || !res.success) {
-      statusMessage.textContent = 'Failed to load patients';
-      return;
-    }
-    const patients = res.patients || [];
-    // Clear select
-    patientSelect.innerHTML = '<option value="">-- choose patient (optional) --</option>';
-    patients.forEach(p => {
-      const fullName = `${p.nombre || ''} ${p.apellidoP || ''} ${p.apellidoM || ''}`.trim();
-      const opt = document.createElement('option');
-      opt.value = JSON.stringify({ id: p.id, telefono: p.telefono || '', name: fullName });
-      opt.textContent = `${fullName} (${p.telefono || 'no phone'})`;
-      patientSelect.appendChild(opt);
+  function tsTag(date = new Date()) {
+    const z = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}${z(date.getMonth() + 1)}${z(date.getDate())}_${z(date.getHours())}${z(date.getMinutes())}${z(date.getSeconds())}`;
+  }
+
+  function readFileAsText(file) {
+    return new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result));
+      fr.onerror = rej;
+      fr.readAsText(file);
     });
   }
 
-  // When patient selected, display phone
-  if (patientSelect) {
-    patientSelect.addEventListener('change', () => {
-      const val = patientSelect.value;
-      if (!val) {
-        patientPhoneP.textContent = '';
-        return;
-      }
-      try {
-        const obj = JSON.parse(val);
-        patientPhoneP.textContent = `Phone: ${obj.telefono || '(none)'}`;
-      } catch (e) {
-        patientPhoneP.textContent = '';
-      }
-    });
-  }
-
-  // File input handler (HTML file form route)
-  if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) {
-        statusMessage.textContent = 'No file selected';
-        return;
-      }
-      hl7Filename = file.name.replace(/\.[^/.]+$/, '');
-      const reader = new FileReader();
-      reader.onload = () => {
-        hl7Content = reader.result;
-        statusMessage.textContent = `Loaded ${file.name} (${Math.round(file.size / 1024)} KB)`;
-        reportLinkBlock.style.display = 'none';
-      };
-      reader.onerror = () => {
-        statusMessage.textContent = 'Failed to read file';
-      };
-      reader.readAsText(file);
-    });
-  }
-
-  // Native dialog open via main process (alternative)
-  if (openNativeBtn) {
-    openNativeBtn.addEventListener('click', async () => {
-      statusMessage.textContent = 'Opening file dialog...';
-      const res = await window.apiResults.selectFile();
-      if (res && !res.canceled && res.content) {
-        hl7Content = res.content;
-        hl7Filename = res.filePath ? res.filePath.split(/[\\/]/).pop().replace(/\.[^/.]+$/, '') : 'report';
-        statusMessage.textContent = `Loaded ${res.filePath}`;
-        reportLinkBlock.style.display = 'none';
-      } else if (res && res.canceled) {
-        statusMessage.textContent = 'File selection canceled';
-      } else {
-        statusMessage.textContent = 'No file selected or error';
-      }
-    });
-  }
-
-  // Build filename base using HL7 patient name if available, else DB selection or fallback
-  function getFilenameBase(parsedHl7, selectedPatientObj) {
-    let namePart = '';
-    if (parsedHl7 && parsedHl7.patient && (parsedHl7.patient.firstName || parsedHl7.patient.lastName)) {
-      namePart = `${parsedHl7.patient.firstName || ''} ${parsedHl7.patient.lastName || ''}`.trim();
-    } else if (selectedPatientObj && selectedPatientObj.name) {
-      namePart = selectedPatientObj.name;
-    } else if (hl7Filename) {
-      namePart = hl7Filename;
-    } else {
-      namePart = 'Resultados';
-    }
-
-    // Choose datetime from HL7 order if present
-    let datePart = null;
-    if (parsedHl7 && parsedHl7.order && parsedHl7.order.dateTime) {
-      // Try to parse HL7 dateTime (often YYYYMMDDHHMMSS or similar)
-      const dt = parsedHl7.order.dateTime;
-      // Attempt basic parse for YYYYMMDDHHMM or YYYYMMDD
-      const m = /^(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/.exec(dt);
-      if (m) {
-        const year = m[1], month = m[2], day = m[3], hh = m[4] || '00', mm = m[5] || '00';
-        datePart = `${year}${month}${day}_${hh}${mm}`;
-      }
-    }
-    if (!datePart) {
-      datePart = formatTimestamp(new Date());
-    }
-
-    const base = `Resultados_${namePart}_${datePart}`;
-    return sanitizeForFilename(base);
-  }
-
-  // Generate PDF
-  if (generateBtn) {
-    generateBtn.addEventListener('click', async () => {
-      if (!hl7Content) {
-        statusMessage.textContent = 'Please select an HL7 file first.';
-        return;
-      }
-      statusMessage.textContent = 'Parsing HL7...';
-      // Parse HL7 client-side minimal parsing to extract name/dateTime (we rely on main.parse but main parses server-side)
-      // We'll call main to produce the PDF but to create a filenameBase we can do a minimal parse similar to HL7.js
-      function parseHL7Minimal(message) {
-        const lines = message.trim().split(/\r?\n/);
-        const result = { header: {}, patient: {}, order: {}, observations: [] };
-        for (const line of lines) {
+  // LOCAL fallback: extract PID field 5 (LAST^FIRST) -> return "FIRST LAST"
+  function extractNameFromPIDLocal(text) {
+    try {
+      const lines = String(text || '').split(/\r?\n/);
+      for (const line of lines) {
+        if (!line) continue;
+        if (line.startsWith('PID') || line.startsWith('PID|')) {
           const parts = line.split('|');
-          const seg = parts[0];
-          if (seg === 'PID') {
-            result.patient = {
-              id: parts[3],
-              lastName: parts[5]?.split('^')[0],
-              firstName: parts[5]?.split('^')[1]
-            };
-          } else if (seg === 'OBR') {
-            result.order = { dateTime: parts[7] };
-          } else if (seg === 'OBX') {
-            result.observations.push({ name: parts[3]?.split('^')[1], value: parts[5] });
-          } else if (seg === 'MSH') {
-            result.header = { messageDate: parts[6] };
+          const nameField = parts[5] || '';
+          const comps = nameField.split('^');
+          const last = (comps[0] || '').trim();
+          const first = (comps[1] || '').trim();
+          const combined = `${first || ''} ${last || ''}`.trim();
+          if (combined) return combined;
+        }
+      }
+    } catch (e) {
+      console.warn('extractNameFromPIDLocal failed', e);
+    }
+    return null;
+  }
+
+  // Ask main to parse HL7; if it doesn't return a name, fallback to local PID parse
+  async function extractNameFromHl7(text) {
+    if (window.apiResults && typeof window.apiResults.parseHL7 === 'function') {
+      try {
+        const res = await window.apiResults.parseHL7(text);
+        if (res && res.success) {
+          if (res.patientName) return res.patientName;
+          if (res.parsed && res.parsed.patient) {
+            const p = res.parsed.patient;
+            const first = p.firstName || p.given || p.first || '';
+            const last = p.lastName || p.family || p.last || '';
+            const combined = `${first || ''} ${last || ''}`.trim();
+            if (combined) return combined;
           }
         }
-        return result;
+      } catch (e) {
+        console.warn('parseHL7 IPC failed, falling back to local parse', e);
       }
+    }
+    return extractNameFromPIDLocal(text);
+  }
 
-      const parsed = parseHL7Minimal(hl7Content);
+  async function generateAndShowFromHl7(text) {
+    try {
+      const name = await extractNameFromHl7(text);
+      const base = name ? sanitizeName(name) : `report`;
+      const filenameBase = `${base}-${tsTag()}`;
 
-      // selected patient for phone
-      let selectedPatientObj = null;
-      if (patientSelect && patientSelect.value) {
-        try { selectedPatientObj = JSON.parse(patientSelect.value); } catch(e){ selectedPatientObj=null; }
+      const res = await window.apiResults.generatePDF(text, filenameBase);
+      if (!res || !res.success) {
+        lastGeneratedPdf = null;
+        setStatus('Resultados');
+        return null;
       }
+      lastGeneratedPdf = res.path || res.filePath || res.filename || null;
 
-      const filenameBase = getFilenameBase(parsed, selectedPatientObj);
+      if (lastGeneratedPdf) {
+        const fileOnly = String(lastGeneratedPdf).split(/[\\/]/).pop();
+        reportPathA.href = `file://${lastGeneratedPdf}`;
+        reportPathA.textContent = fileOnly;
+        reportLinkP.style.display = 'block';
 
-      statusMessage.textContent = 'Generating PDF...';
-
-      const res = await window.apiResults.generatePDF(hl7Content, filenameBase);
-      if (res && res.success) {
-        lastGenerated.path = res.path;
-        lastGenerated.filename = res.filename;
-        statusMessage.textContent = 'PDF generated: ' + res.path;
-        reportPathAnchor.href = `file://${res.path}`;
-        reportPathAnchor.textContent = res.path;
-        reportLinkBlock.style.display = 'block';
+        const displayName = name ? name : '';
+        const finalMsg = displayName ? `Resultados de ${displayName} — ${fileOnly}` : `Resultados — ${fileOnly}`;
+        setStatus(finalMsg);
       } else {
-        statusMessage.textContent = 'Error generating PDF: ' + (res && res.error ? res.error : 'unknown error');
+        reportLinkP.style.display = 'none';
+        setStatus('Resultados');
       }
+      return lastGeneratedPdf;
+    } catch (err) {
+      console.error('generateAndShowFromHl7 error', err);
+      setStatus('Resultados');
+      return null;
+    }
+  }
+
+  // UI handlers
+  generateBtn && generateBtn.addEventListener('click', async () => {
+    const file = hl7Input.files && hl7Input.files[0];
+    if (!file) { setStatus('Resultados'); return; }
+    try {
+      const text = await readFileAsText(file);
+      await generateAndShowFromHl7(text);
+    } catch (e) {
+      console.error(e);
+      setStatus('Resultados');
+    }
+  });
+
+  // load patients into select if present (keeps previous behavior)
+  async function loadPatients() {
+    if (!window.apiPac || typeof window.apiPac.getPatients !== 'function') return;
+    try {
+      const res = await window.apiPac.getPatients();
+      const patients = (res && res.success) ? (res.patients || []) : [];
+      if (!patientSelect) return;
+      patientSelect.innerHTML = '<option value="">-- paciente --</option>';
+      patients.forEach(p => {
+        const full = `${p.nombre || ''} ${p.apellidoP || ''} ${p.apellidoM || ''}`.trim() || `#${p.id}`;
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = full;
+        if (p.telefono) opt.dataset.phone = p.telefono;
+        if (p.correo) opt.dataset.email = p.correo;
+        patientSelect.appendChild(opt);
+      });
+    } catch (e) {
+      console.warn('loadPatients failed', e);
+    }
+  }
+
+  if (patientSelect) {
+    patientSelect.addEventListener('change', () => {
+      const opt = patientSelect.options[patientSelect.selectedIndex];
+      const phone = opt && opt.dataset ? opt.dataset.phone || '' : '';
+      const email = opt && opt.dataset ? opt.dataset.email || '' : '';
+      patientPhoneP.textContent = ((phone ? `Tel: ${phone}` : '') + (email ? (phone ? ' • ' : '') + `Email: ${email}` : '')) || '';
+      if (sendWhatsAppBtn) sendWhatsAppBtn.disabled = !phone;
+      if (sendEmailBtn) sendEmailBtn.disabled = !email;
     });
   }
 
-  // Send to WhatsApp
-  if (sendWhatsBtn) {
-    sendWhatsBtn.addEventListener('click', async () => {
-      // Need phone number from selected patient
-      if (!patientSelect || !patientSelect.value) {
-        statusMessage.textContent = 'Select a patient from the dropdown to get their phone number.';
-        return;
-      }
-      let selected = null;
-      try { selected = JSON.parse(patientSelect.value); } catch(e){ selected = null; }
-      if (!selected || !selected.telefono) {
-        statusMessage.textContent = 'Selected patient has no phone number.';
-        return;
-      }
-      // sanitize phone: only digits
-      let digits = selected.telefono.replace(/\D/g, '');
-      if (digits.length === 10) {
-        // prepend Mexico country code (52). If you prefer "521" use that instead.
-        digits = '52' + digits;
-      } else if (digits.length === 11 && digits.startsWith('1')) {
-        // if already has leading 1 (rare), prepend 52 if missing
-        digits = '52' + digits;
-      } else if (!digits.startsWith('52')) {
-        // fallback, still prepend 52
-        digits = '52' + digits;
-      }
+  // Improved WhatsApp handler with logs and robust phone formatting.
+  if (sendWhatsAppBtn) {
+    sendWhatsAppBtn.addEventListener('click', async () => {
+      try {
+        const opt = patientSelect.options[patientSelect.selectedIndex];
+        const phoneRaw = opt && opt.dataset ? opt.dataset.phone || '' : '';
+        if (!phoneRaw) { setStatus('Resultados'); return; }
 
-      // Build message: use HL7 name if parsed, else selected name
-      const name = (() => {
-        // attempt to use last parsed HL7 name
-        let parsedHL7name = null;
-        if (hl7Content) {
-          const parsed = (function (message) {
-            const lines = message.trim().split(/\r?\n/);
-            for (const line of lines) {
-              const parts = line.split('|');
-              if (parts[0] === 'PID') {
-                const comp = parts[5] || '';
-                const last = comp.split('^')[0] || '';
-                const first = comp.split('^')[1] || '';
-                return `${first} ${last}`.trim();
-              }
-            }
-            return null;
-          })(hl7Content);
-          parsedHL7name = parsedHL7name || parsed;
+        // Keep only digits
+        const digits = String(phoneRaw).replace(/\D/g, '');
+        // If digits length is 10 (local), use it as-is (per your requirement to not auto-add country code).
+        // If longer (likely includes country code), use full number.
+        let phoneForWa = '';
+        if (digits.length >= 11) {
+          phoneForWa = digits; // already includes country code
+        } else if (digits.length === 10) {
+          phoneForWa = digits; // local 10-digit number (user asked not to add 52)
+        } else {
+          // too short -> invalid
+          setStatus('Resultados');
+          return;
         }
-        if (parsedHL7name) return parsedHL7name;
-        if (selected && selected.name) return selected.name;
-        return '';
-      })();
 
-      const filenameToShow = lastGenerated.filename || 'Resultados (archivo)';
-      const messageText = `Resultados ${name}: ${filenameToShow}`;
-      const encoded = encodeURIComponent(messageText);
-      const waUrl = `https://wa.me/${digits}?text=${encoded}`;
+        const message = 'Te comparto el resultado.';
+        const url = `https://wa.me/${phoneForWa}?text=${encodeURIComponent(message)}`;
 
-      statusMessage.textContent = 'Opening WhatsApp...';
-      const res = await window.apiResults.openExternal(waUrl);
-      if (res && res.success) {
-        statusMessage.textContent = 'WhatsApp opened (paste/attach file manually).';
-      } else {
-        statusMessage.textContent = 'Failed to open WhatsApp link: ' + (res && res.error ? res.error : '');
+        // Debug log (visible in DevTools console)
+        console.log('[WA] open', { phoneRaw, digits, phoneForWa, url });
+
+        if (window.apiResults && typeof window.apiResults.openExternal === 'function') {
+          await window.apiResults.openExternal(url);
+        } else {
+          window.open(url, '_blank');
+        }
+
+        // keep the final message if a result exists
+        if (lastGeneratedPdf) {
+          const fileOnly = String(lastGeneratedPdf).split(/[\\/]/).pop();
+          const name = await extractNameFromHl7(await readFileAsText(hl7Input.files[0]));
+          const displayName = name ? name : '';
+          const finalMsg = displayName ? `Resultados de ${displayName} — ${fileOnly}` : `Resultados — ${fileOnly}`;
+          setStatus(finalMsg);
+        } else {
+          setStatus('Resultados');
+        }
+      } catch (err) {
+        console.error('sendWhatsApp error', err);
+        setStatus('Resultados');
       }
     });
   }
 
-  // initial load
-  loadPatients();
+  if (sendEmailBtn) {
+    sendEmailBtn.addEventListener('click', async () => {
+      const opt = patientSelect.options[patientSelect.selectedIndex];
+      const email = opt && opt.dataset ? opt.dataset.email || '' : '';
+      if (!email) { setStatus('Resultados'); return; }
+      if (!lastGeneratedPdf) {
+        const file = hl7Input.files && hl7Input.files[0];
+        if (!file) { setStatus('Resultados'); return; }
+        try {
+          const text = await readFileAsText(file);
+          await generateAndShowFromHl7(text);
+        } catch (e) { console.error(e); setStatus('Resultados'); return; }
+      }
+      const subject = `Resultado`;
+      const body = `Adjunto resultado.\n\nArchivo: ${lastGeneratedPdf ? String(lastGeneratedPdf).split(/[\\/]/).pop() : 'no disponible'}`;
+      const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      await window.apiResults.openExternal(mailto);
+      if (lastGeneratedPdf && window.apiResults.revealFile) await window.apiResults.revealFile(lastGeneratedPdf);
+      if (lastGeneratedPdf) {
+        const fileOnly = String(lastGeneratedPdf).split(/[\\/]/).pop();
+        const name = await extractNameFromHl7(await readFileAsText(hl7Input.files[0]));
+        const displayName = name ? name : '';
+        const finalMsg = displayName ? `Resultados de ${displayName} — ${fileOnly}` : `Resultados — ${fileOnly}`;
+        setStatus(finalMsg);
+      } else {
+        setStatus('Resultados');
+      }
+    });
+  }
 
+  if (reportPathA) {
+    reportPathA.addEventListener('click', async (ev) => {
+      ev.preventDefault();
+      if (!lastGeneratedPdf) return;
+      await window.apiResults.openExternal(`file://${lastGeneratedPdf}`);
+      if (lastGeneratedPdf) {
+        const fileOnly = String(lastGeneratedPdf).split(/[\\/]/).pop();
+        const name = await extractNameFromHl7(await readFileAsText(hl7Input.files[0]));
+        const displayName = name ? name : '';
+        const finalMsg = displayName ? `Resultados de ${displayName} — ${fileOnly}` : `Resultados — ${fileOnly}`;
+        setStatus(finalMsg);
+      }
+    });
+  }
+
+  // init
+  if (reportLinkP) reportLinkP.style.display = 'none';
+  if (sendWhatsAppBtn) sendWhatsAppBtn.disabled = true;
+  if (sendEmailBtn) sendEmailBtn.disabled = true;
+  await loadPatients?.();
 })();

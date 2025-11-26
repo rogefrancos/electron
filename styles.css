@@ -620,6 +620,33 @@ input[type="email"] {
   align-content: center;
 }
 
+/* Add these rules to your styles.css (append) to ensure send buttons look correct on the status page */
+
+/* Make the send/email button white and prominent */
+.send-email.boton,
+.send-email.boton:not(.boton_cancelar) {
+  background: #fff !important;
+  border: 1px solid #cfcfcf !important;
+  color: #222 !important;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+/* Keep WhatsApp green but not greyed */
+#send-whatsapp-btn {
+  background: #25D366 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* Ensure disabled states are visible but not greyed-out background */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: none;
+  background-color: #f5f5f5 !important;
+}
+
 /* users
    Estilos específicos para la sección de gestión de usuarios.
    Añade esta sección al final de tu styles.css (o donde agrupes secciones).
@@ -729,4 +756,36 @@ input[type="email"] {
   .users-table col.col-role { width: 20%; }
   .users-table col.col-actions { width: 35%; }
   .contenedor { width: 95%; }
+}
+
+/* Fix: make the generated report link visible (not white) */
+#report-link a,
+#report-path,
+#report-link a:visited {
+  color: #0b66c3;          /* azul legible; cámbialo si quieres otro */
+  background: transparent; /* asegurar que no tenga fondo blanco/oscuro */
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* Hover/focus state */
+#report-link a:hover,
+#report-path:hover,
+#report-link a:focus {
+  color: #084b9a;
+  text-decoration: none;
+  outline: none;
+}
+
+/* If the link lives inside a light badge with white text set elsewhere, force contrast */
+#report-link a,
+#report-path {
+  -webkit-text-fill-color: initial !important;
+  color: #0b66c3 !important;
+}
+
+/* Optional: make the container slightly lighter so the link stands out */
+#report-link {
+  background: transparent;
+  padding-top: 8px;
 }

@@ -1,8 +1,6 @@
-// Client-side logic for users.html - robust loading of active user and admin UI
-// Coloca este archivo donde users.html lo referencia (renderer/renderedUser.js).
 
 (async function () {
-  // Elementos DOM
+  // Referencias a Elementos DOM
   const activeUserP = document.getElementById('active-user');
   const logoutBtn = document.getElementById('logout-btn');
   const adminSection = document.getElementById('admin-section');
@@ -25,7 +23,7 @@
     }
   }
 
-  // Helpers de UI
+  // Mostrar usuario activo
   function showActive(user) {
     if (!user) {
       activeUserP.textContent = 'No user logged in';
@@ -34,7 +32,7 @@
     }
   }
 
-  // Llamada segura a getActiveUser con manejo de errores
+  // Cargar usuario activo con manejo robusto de errores
   async function loadActiveUser() {
     try {
       if (!window.apiUsers || typeof window.apiUsers.getActiveUser !== 'function') {
@@ -93,7 +91,7 @@
         usersTableBody.appendChild(tr);
       });
 
-      // Attach handlers
+      // Event listeners
       usersTableBody.querySelectorAll('.edit-user-btn').forEach(btn => btn.addEventListener('click', onEditClick));
       usersTableBody.querySelectorAll('.delete-user-btn').forEach(btn => btn.addEventListener('click', onDeleteClick));
     } catch (err) {
@@ -113,7 +111,7 @@
     return String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  // Handlers de edición y borrado (se mantienen inline)
+  // Editar usuario
   function onEditClick(e) {
     try {
       const id = Number(e.currentTarget.dataset.id);
@@ -145,7 +143,7 @@
       `;
       const roleSelect = tr.querySelector('.edit-role');
       if (roleSelect) roleSelect.value = (currentRole && currentRole.toLowerCase() === 'admin') ? 'admin' : 'user';
-
+      // Guardar cambios
       tr.querySelector('.save-user-btn').addEventListener('click', async () => {
         try {
           const newUsername = tr.querySelector('.edit-username').value.trim();
@@ -174,7 +172,7 @@
           await refresh();
         }
       });
-
+      //Cancelar edicion
       tr.querySelector('.cancel-edit-btn').addEventListener('click', async () => {
         await refresh();
       });
@@ -183,7 +181,7 @@
       showStatus('Error al iniciar edición (ver consola)', 'error', 6000);
     }
   }
-
+  //Eliminar usuario
   async function onDeleteClick(e) {
     try {
       const id = Number(e.currentTarget.dataset.id);
@@ -202,7 +200,7 @@
     }
   }
 
-  // Crear usuario
+  // Crear usuario nuevo
   createForm.addEventListener('submit', async (e) => {
     try {
       e.preventDefault();

@@ -10,16 +10,17 @@ inputHora.addEventListener('blur', validar);
 
 // Funciones
 function validar(e){
+    //Validacion de campo vacio
     if(e.target.value.trim() === ''){
         mostrarAlerta(`El campo ${e.target.id}  es obligatorio`, e.target.parentElement);
         return;
     }
-
+//Si todo esta bien limpia errores
     limpiarAlerta(e.target.parentElement);
 }
-
+//Crea un mensaje de error bajo el campo
 function mostrarAlerta(mensaje, referencia){
-    limpiarAlerta(referencia);
+    limpiarAlerta(referencia); //Evita duplicados
 
     const error = document.createElement('P');
     error.textContent = mensaje;
@@ -27,7 +28,7 @@ function mostrarAlerta(mensaje, referencia){
 
     referencia.appendChild(error);
 }
-
+//Remueve el error si ya existe
 function limpiarAlerta(referencia) {
         // comprueba si ya hay una alerta
         const alerta = referencia.querySelector('.error');

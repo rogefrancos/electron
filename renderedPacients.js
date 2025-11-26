@@ -2,15 +2,16 @@
 // Género: masculino, femenino, "39 tipos de gay" (exactamente como pediste)
 
 (async function () {
+  //Opciones de genero permitidas en toda la interfaz
   const GENDER_OPTIONS = ['masculino', 'femenino', '39 tipos de gay'];
-
+  //Convierte un texto a formato etiqueta
+  //Excepto si comineza con numero
   function labelize(s) {
     if (!s) return '';
-    // Capitalize first letter only (keeps the exact phrase for "39 tipos de gay")
-    if (/^\d/.test(s)) return s; // if starts with digit, keep as-is
+    if (/^\d/.test(s)) return s; 
     return String(s)[0].toUpperCase() + String(s).slice(1);
   }
-
+  // Referencias principales del DOM
   const form = document.getElementById('create-pac-form');
   const inputSearch = document.getElementById('patient-search-input');
   const ac = document.getElementById('patient-autocomplete');
@@ -18,13 +19,15 @@
   const tbody = document.querySelector('#patients-table tbody');
   const generoSelect = document.getElementById('p-genero');
 
-  // Ensure the create form select remains consistent (in case HTML was changed elsewhere)
+  // Inserta las opciones de genero en el formulario principal
+  //Pero solo si no estan presentes en el HTML
   function populateMainGender() {
     if (!generoSelect) return;
     // If HTML already has the options (as in provided pacients.html), skip overwriting to preserve exact wording.
     // But ensure at least the required three exist; if not, populate from GENDER_OPTIONS.
     const existing = Array.from(generoSelect.options).map(o => o.value.toLowerCase().trim());
     const needed = GENDER_OPTIONS.every(g => existing.includes(String(g).toLowerCase()));
+    //Si ya estan presentes las opciones, no sobreescribimos nada.
     if (needed) return;
     generoSelect.innerHTML = '<option value="">-- Selecciona --</option>';
     for (const g of GENDER_OPTIONS) {
@@ -34,7 +37,7 @@
       generoSelect.appendChild(opt);
     }
   }
-
+  //Inserta opciones de genero dentro de un <select> de edicion inline
   function populateGenderSelect(selectEl, selectedValue) {
     if (!selectEl) return;
     selectEl.innerHTML = '<option value="">--</option>';
@@ -46,7 +49,7 @@
       selectEl.appendChild(opt);
     }
   }
-
+  //Muestra mensajes al usuario (info o error)
   function showStatus(msg, type='info', timeout=4000) {
     if (!statusEl) return;
     statusEl.style.display = 'block';
@@ -54,15 +57,16 @@
     statusEl.textContent = msg;
     if (timeout>0) { clearTimeout(showStatus._t); showStatus._t = setTimeout(()=> { statusEl.style.display='none'; }, timeout); }
   }
-
+  //Sanitiza texto para evitar inyeccion HTML
   function escapeHtml(s) { if (!s) return ''; return String(s).replace(/[&<>"']/g, t=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[t])); }
+  //Sanitiza atributos HTML
   function escapeAttr(s) { if (!s) return ''; return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
   // Validation helpers
   function validDate(d) { return !d || /^\d{4}-\d{2}-\d{2}$/.test(d); }
   function validEmail(e) { return !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
   function validPhone(p) { return !p || /^[0-9+\s\-()]{6,20}$/.test(p); }
-
+  // Validacion general de paciente antes de crear o editar
   function validatePatientInput({ nombre, apellidoP, fechaNac, correo, telefono }) {
     if (!nombre || nombre.trim().length === 0) return { ok: false, error: 'Nombre requerido' };
     if (!apellidoP || apellidoP.trim().length === 0) return { ok: false, error: 'Apellido paterno requerido' };
@@ -72,10 +76,10 @@
     return { ok: true };
   }
 
-  // Populate main gender select (but don't override if HTML already has the three options)
+  // Asegurar que el <select> principal este bien cargado
   populateMainGender();
 
-  // --- load + render patients ---
+  // cargar y rendereizar pacientes
   async function loadAll() {
     try {
       if (!window.apiPac || typeof window.apiPac.getPatients !== 'function') {
@@ -91,7 +95,7 @@
       tbody.innerHTML = '<tr><td colspan="4">Error (ver consola)</td></tr>';
     }
   }
-
+  // Construye la tabla principal con la lista de pacientes
   function renderPatientsTable(list) {
     tbody.innerHTML = '';
     if (!list || list.length === 0) {
@@ -115,14 +119,15 @@
       `;
       tbody.appendChild(tr);
     });
-
+    // Asignar eventos a los botones creados dinamicamente
     tbody.querySelectorAll('.edit-pac').forEach(b => b.addEventListener('click', onEdit));
     tbody.querySelectorAll('.del-pac').forEach(b => b.addEventListener('click', onDelete));
   }
 
-  // --- create patient ---
+  // crear paciente
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    //Obtener valores del formulario
     const nombre = document.getElementById('p-nombre').value.trim();
     const apellidoP = document.getElementById('p-apellidoP').value.trim();
     const apellidoM = document.getElementById('p-apellidoM').value.trim();
@@ -130,10 +135,10 @@
     const fechaNac = document.getElementById('p-fechaNac').value.trim();
     const correo = document.getElementById('p-correo').value.trim();
     const telefono = document.getElementById('p-telefono').value.trim();
-
+    // Validacion
     const v = validatePatientInput({ nombre, apellidoP, fechaNac, correo, telefono });
     if (!v.ok) { showStatus(v.error, 'error'); return; }
-
+    //Enviar API
     try {
       const res = await window.apiPac.regPac(nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono);
       if (res && res.success) {
@@ -149,10 +154,10 @@
     }
   });
 
-  // --- autocomplete/search logic ---
+  // Autocompletado / Busqueda
   let patientsCache = null;
   const MAX = 12;
-
+  //Carga del cache local para busquedas rapidas
   async function loadPatientsCache() {
     if (patientsCache) return patientsCache;
     try {
@@ -177,7 +182,7 @@
       return patientsCache;
     }
   }
-
+  //Filtra resultados en el cache local
   function filterPatientsLocal(q) {
     if (!q) return [];
     const s = q.trim().toLowerCase();
@@ -189,7 +194,7 @@
     }
     return out;
   }
-
+  //Solicita a la API resultados con query
   async function fetchPatientsQuery(q) {
     try {
       const res = await window.apiPac.getPatients({ query: q });
@@ -200,7 +205,7 @@
       return [];
     }
   }
-
+  //Renderiza las suguerencias en el menu de autocompletado
   function renderSuggestions(list) {
     ac.innerHTML = '';
     ac.setAttribute('aria-hidden', list.length === 0 ? 'true' : 'false');
@@ -215,14 +220,14 @@
       ac.appendChild(item);
     });
   }
-
+  //Seleciona un resultado del autocompletado
   function selectSuggestion(p) {
     inputSearch.value = p.fullName;
     ac.style.display = 'none';
     renderPatientsTable([p]);
     showStatus(`Mostrando: ${p.fullName}`, 'info', 2500);
   }
-
+  //Evento de busqueda
   inputSearch.addEventListener('input', async (ev) => {
     const q = ev.target.value;
     if (!q || q.length < 1) { ac.style.display = 'none'; await loadAll(); return; }
@@ -235,16 +240,17 @@
     const local = filterPatientsLocal(q);
     renderSuggestions(local);
   });
-
+  //Oculta autocompletado cuando pierde foco
   inputSearch.addEventListener('blur', () => setTimeout(()=> ac.style.display='none', 150));
 
-  // --- edit inline ---
+  // Edicion inline
   async function onEdit(e) {
     const id = Number(e.currentTarget.dataset.id);
     const tr = tbody.querySelector(`tr[data-id="${id}"]`);
     if (!tr) return;
     const res = await window.apiPac.getPatients({ id });
     const p = (res && res.success && res.patients && res.patients[0]) ? res.patients[0] : null;
+    //Datos actuales del paciente
     const nombre = p ? p.nombre : '';
     const apellidoP = p ? p.apellidoP : '';
     const apellidoM = p ? p.apellidoM : '';
@@ -252,7 +258,7 @@
     const genero = p ? p.genero : '';
     const fechaNac = p ? p.fechaNac : '';
     const correo = p ? p.correo : '';
-
+    //Reemplazar la fila por campos editables
     tr.innerHTML = `
       <td>${id}</td>
       <td>
@@ -271,10 +277,10 @@
         </div>
       </td>
     `;
-
+    //Inserta las opciones de genero correspondientes
     const generoSel = tr.querySelector('.edit-genero');
     populateGenderSelect(generoSel, genero);
-
+    //Guarda los cambios
     tr.querySelector('.save-pac').addEventListener('click', async () => {
       const fields = {};
       const newNombre = tr.querySelector('.edit-nombre').value.trim();
@@ -305,11 +311,11 @@
         showStatus('Error al actualizar paciente: ' + (res2 && res2.error ? res2.error : 'unknown'), 'error', 6000);
       }
     });
-
+    //Cancelar edicioin y recargar la tabla
     tr.querySelector('.cancel-pac').addEventListener('click', async () => { await loadAll(); });
   }
 
-  // --- delete ---
+  // Eliminar Paciente
   async function onDelete(e) {
     const id = Number(e.currentTarget.dataset.id);
     const res = await window.apiPac.deletePatient(id);
@@ -322,6 +328,6 @@
     }
   }
 
-  // init
+  // INICIALIZACION DE TODO
   await loadAll();
 })();
