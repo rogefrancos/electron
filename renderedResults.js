@@ -1,40 +1,39 @@
-// renderer/results-status.js
-// Same as before but with a more robust WhatsApp handler and debug logs.
-// It will try to use the stored phone (last 10 digits by default) and open wa.me correctly.
 
 (async function () {
-  const hl7Input = document.getElementById('hl7file');
-  const generateBtn = document.getElementById('generate-pdf-btn');
-  const reportLinkP = document.getElementById('report-link');
-  const reportPathA = document.getElementById('report-path');
-  const statusMessage = document.getElementById('status-message');
-  const patientSelect = document.getElementById('patient-select');
-  const patientPhoneP = document.getElementById('patient-phone');
-  const sendWhatsAppBtn = document.getElementById('send-whatsapp-btn');
-  const sendEmailBtn = document.querySelector('.send-email');
+  //Referencias a elementos del DOM
+  const hl7Input = document.getElementById('hl7file');//Input de archivo HL7
+  const generateBtn = document.getElementById('generate-pdf-btn');//Boton para generar el PDF
+  const reportLinkP = document.getElementById('report-link');//Contenedor del enlace al PDF
+  const reportPathA = document.getElementById('report-path');//Enlace al PDF generado
+  const statusMessage = document.getElementById('status-message');//Elemento para mostrar mensajes de estado
+  const patientSelect = document.getElementById('patient-select');//Select de pacientes
+  const patientPhoneP = document.getElementById('patient-phone');//Muestra el telefono del paciente
+  const sendWhatsAppBtn = document.getElementById('send-whatsapp-btn');//Boton enviar Wsp
+  const sendEmailBtn = document.querySelector('.send-email');// Boton enviar email
 
-  let lastGeneratedPdf = null;
+  let lastGeneratedPdf = null;//Guarda la ruta del ultimo PDF generado
+  //Funcion para actualizar el mensaje de estado
 
   function setStatus(msg) {
     if (!statusMessage) return;
     statusMessage.textContent = msg;
-    statusMessage.style.color = '#084';
+    statusMessage.style.color = '#084';//El color del estado
   }
-
+//Funcion para limpiar y normalizar nombres de pacientes
   function sanitizeName(n) {
     if (!n) return null;
     return String(n)
-      .normalize('NFKD').replace(/[\u0300-\u036F]/g, '')
-      .replace(/[^a-zA-Z0-9 _-]/g, '')
+      .normalize('NFKD').replace(/[\u0300-\u036F]/g, '')//Quita acentos
+      .replace(/[^a-zA-Z0-9 _-]/g, '')//Quita caracteres alfanumericos
       .trim()
-      .replace(/\s+/g, '_') || null;
+      .replace(/\s+/g, '_') || null;//Remplaza espacios por guiones bajos
   }
-
+//Genera un timestamp legible para el nombre de archivo
   function tsTag(date = new Date()) {
-    const z = n => String(n).padStart(2, '0');
+    const z = n => String(n).padStart(2, '0');//Asegura dos digitos
     return `${date.getFullYear()}${z(date.getMonth() + 1)}${z(date.getDate())}_${z(date.getHours())}${z(date.getMinutes())}${z(date.getSeconds())}`;
   }
-
+//Leer un archivo cono texto
   function readFileAsText(file) {
     return new Promise((res, rej) => {
       const fr = new FileReader();
@@ -43,8 +42,7 @@
       fr.readAsText(file);
     });
   }
-
-  // LOCAL fallback: extract PID field 5 (LAST^FIRST) -> return "FIRST LAST"
+//Extrae el nombre del paciente localmente desde el campo PID del HL7
   function extractNameFromPIDLocal(text) {
     try {
       const lines = String(text || '').split(/\r?\n/);
@@ -65,8 +63,7 @@
     }
     return null;
   }
-
-  // Ask main to parse HL7; if it doesn't return a name, fallback to local PID parse
+//Extrae nombre usando IPC al main, con fallback a la funcion local
   async function extractNameFromHl7(text) {
     if (window.apiResults && typeof window.apiResults.parseHL7 === 'function') {
       try {
@@ -87,7 +84,7 @@
     }
     return extractNameFromPIDLocal(text);
   }
-
+//Genera PDf y actualiza la UI con el enlace y estado
   async function generateAndShowFromHl7(text) {
     try {
       const name = await extractNameFromHl7(text);
@@ -123,7 +120,7 @@
     }
   }
 
-  // UI handlers
+  // Generar PDF al hacer click
   generateBtn && generateBtn.addEventListener('click', async () => {
     const file = hl7Input.files && hl7Input.files[0];
     if (!file) { setStatus('Resultados'); return; }
@@ -136,7 +133,7 @@
     }
   });
 
-  // load patients into select if present (keeps previous behavior)
+  // Cargar pacientes en el select
   async function loadPatients() {
     if (!window.apiPac || typeof window.apiPac.getPatients !== 'function') return;
     try {
@@ -157,7 +154,7 @@
       console.warn('loadPatients failed', e);
     }
   }
-
+//Actualiza telefono/email y habilita botones segun paciente seleccionado
   if (patientSelect) {
     patientSelect.addEventListener('change', () => {
       const opt = patientSelect.options[patientSelect.selectedIndex];
@@ -168,8 +165,7 @@
       if (sendEmailBtn) sendEmailBtn.disabled = !email;
     });
   }
-
-  // Improved WhatsApp handler with logs and robust phone formatting.
+//wsp handler mejorado
   if (sendWhatsAppBtn) {
     sendWhatsAppBtn.addEventListener('click', async () => {
       try {
@@ -177,17 +173,16 @@
         const phoneRaw = opt && opt.dataset ? opt.dataset.phone || '' : '';
         if (!phoneRaw) { setStatus('Resultados'); return; }
 
-        // Keep only digits
+        
         const digits = String(phoneRaw).replace(/\D/g, '');
-        // If digits length is 10 (local), use it as-is (per your requirement to not auto-add country code).
-        // If longer (likely includes country code), use full number.
+        
         let phoneForWa = '';
         if (digits.length >= 11) {
-          phoneForWa = digits; // already includes country code
+          phoneForWa = digits; //incluye codigo de pais
         } else if (digits.length === 10) {
-          phoneForWa = digits; // local 10-digit number (user asked not to add 52)
+          phoneForWa = digits; //ocal 10 digitos
         } else {
-          // too short -> invalid
+          // numero invalido
           setStatus('Resultados');
           return;
         }
@@ -195,7 +190,7 @@
         const message = 'Te comparto el resultado.';
         const url = `https://wa.me/${phoneForWa}?text=${encodeURIComponent(message)}`;
 
-        // Debug log (visible in DevTools console)
+  
         console.log('[WA] open', { phoneRaw, digits, phoneForWa, url });
 
         if (window.apiResults && typeof window.apiResults.openExternal === 'function') {
@@ -204,7 +199,7 @@
           window.open(url, '_blank');
         }
 
-        // keep the final message if a result exists
+        // Mantener mensaje final si hay PDF
         if (lastGeneratedPdf) {
           const fileOnly = String(lastGeneratedPdf).split(/[\\/]/).pop();
           const name = await extractNameFromHl7(await readFileAsText(hl7Input.files[0]));
@@ -220,7 +215,7 @@
       }
     });
   }
-
+//Email Handler
   if (sendEmailBtn) {
     sendEmailBtn.addEventListener('click', async () => {
       const opt = patientSelect.options[patientSelect.selectedIndex];
@@ -250,7 +245,7 @@
       }
     });
   }
-
+//Click en enlace del PDF
   if (reportPathA) {
     reportPathA.addEventListener('click', async (ev) => {
       ev.preventDefault();
@@ -266,7 +261,7 @@
     });
   }
 
-  // init
+  // Inicializacion
   if (reportLinkP) reportLinkP.style.display = 'none';
   if (sendWhatsAppBtn) sendWhatsAppBtn.disabled = true;
   if (sendEmailBtn) sendEmailBtn.disabled = true;

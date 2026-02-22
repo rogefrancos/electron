@@ -4,41 +4,32 @@ const fs = require('fs');
 const dbms = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 
-// local modules
+// modulos locales
 const { parseHL7 } = require('./HL7');
 const { generatePDF } = require('./pdfgen');
 
-/*
-  main.js (reemplazo completo)
-
-  - Agrupa y corrige handlers IPC.
-  - Usa una única fuente de truth para la DB (creada en app.whenReady).
-  - Normaliza roles, corrige COUNT usage, desduplicación de get-patients y añade el handler
-    solicitado 'getpacient-contact' que devuelve únicamente datos de contacto.
-  - Incluye sanitizeFilenameBase y validaciones mínimas.
-*/
 
 let db = null;
 let mainWindow = null;
 let activeUser = null;
 
-// helper: sanitize a filename base (para nombres de archivos seguros)
+// helpers varios
+//Sanitiza nombres de archivos para evitar caracteres invalidos
 function sanitizeFilenameBase(s) {
   if (!s) return 'report';
   return s
-    .normalize('NFKD').replace(/[\u0300-\u036F]/g, '') // remove diacritics
-    .replace(/[^a-zA-Z0-9 _-]/g, '') // allow letters, numbers, space, underscore, hyphen
-    .trim()
-    .replace(/\s+/g, '_'); // replace spaces with underscore
+    .normalize('NFKD').replace(/[\u0300-\u036F]/g, '') 
+    .replace(/[^a-zA-Z0-9 _-]/g, '') 
+    .replace(/\s+/g, '_'); 
 }
-
+//Validadores basicos
 function validDate(d) { return /^\d{4}-\d{2}-\d{2}$/.test(String(d)); }
 function validTime(t) { return t === null || t === '' || /^\d{2}:\d{2}$/.test(String(t)); }
-
+//Determina si el usuario logueado es admin
 function isAdminSession() {
   return activeUser && String(activeUser.role).trim().toLowerCase() === 'admin';
 }
-
+//Crear ventana principal
 function createWindow() {
   const win = new BrowserWindow({
     width: 1170,
@@ -50,13 +41,13 @@ function createWindow() {
   mainWindow = win;
   win.on('closed', () => { mainWindow = null; });
 }
-
+//inicializar aplicacion
 app.whenReady().then(() => {
-  // create DB in userData for safety
+  // crear DB dentro de AppData para seguridad
   const dbPath = path.join(app.getPath('userData'), 'labdata.db');
   db = new dbms(dbPath);
 
-  // initialize tables (idempotent)
+  // Crear tablas (Si no existen)
   db.prepare(`
     CREATE TABLE IF NOT EXISTS users(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,7 +77,8 @@ app.whenReady().then(() => {
       nota TEXT
     )`).run();
 
-  // ensure admin
+  // Crear admin por defecto si no existe
+  //Tambien convierte contrase;as viejas al formato bcrypt
   try {
     const existingAdmin = db.prepare('SELECT * FROM users WHERE username = ?').get('admin');
     if (!existingAdmin) {
@@ -104,7 +96,7 @@ app.whenReady().then(() => {
     console.error('[main] ensureAdmin error:', e);
   }
 
-  // seed example pacient and citas if missing
+  // semillas de ejemplo
   db.prepare(`
     INSERT OR IGNORE INTO pacient (id, nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono)
     VALUES (1, 'Rogelio', 'Franco', 'Sanchez', 'masculino', '2005-03-11', 'rogefs04@gmail.com', '4612523244')
@@ -115,13 +107,11 @@ app.whenReady().then(() => {
     db.prepare(`INSERT INTO citas (nombre, fecha, hora, nota) VALUES (?, ?, ?, ?)`).run('Rogelio', '2025-08-18', '13:30', 'Alergico a las Abejas');
   }
 
-  // create window after DB ready
+  
   createWindow();
 });
 
-/* ============================
-   IPC: utilities
-   ============================ */
+//Utilidades de ventana
 
 ipcMain.handle('reload-main-window', async () => {
   try {
@@ -147,7 +137,7 @@ ipcMain.handle('focus-main-window', async () => {
   }
 });
 
-/* ===== HL7 file selection & PDF generation ===== */
+//Seleccionar archivo HL7 del sistema
 ipcMain.handle('select-hl7-file', async () => {
   try {
     const res = await dialog.showOpenDialog({
@@ -167,7 +157,7 @@ ipcMain.handle('select-hl7-file', async () => {
     return { canceled: true, error: String(err) };
   }
 });
-
+//Generar PDF a partir del contenido HL7
 ipcMain.handle('generate-pdf-from-hl7', async (event, content, filenameBase = null) => {
   try {
     if (!content) return { success: false, error: 'No HL7 content provided' };
@@ -184,7 +174,8 @@ ipcMain.handle('generate-pdf-from-hl7', async (event, content, filenameBase = nu
   }
 });
 
-/* ===== Authentication ===== */
+// Autenticacion
+//Inicio de sesion
 ipcMain.handle('login', (event, username, password) => {
   try {
     if (!db) return { success: false, error: 'DB not initialized' };
@@ -211,7 +202,7 @@ ipcMain.handle('logout', async () => {
   return { success: true };
 });
 
-/* ===== Users management (admin) ===== */
+//CRUD Usuarios (Solo admin)
 ipcMain.handle('get-all-users', async () => {
   try {
     if (!isAdminSession()) return { success: false, error: 'Not authorized' };
@@ -222,7 +213,7 @@ ipcMain.handle('get-all-users', async () => {
     return { success: false, error: String(err) };
   }
 });
-
+//Crear usuario nuevo
 ipcMain.handle('create-user', async (event, username, plainPassword, role = 'user') => {
   try {
     if (!isAdminSession()) return { success: false, error: 'Not authorized' };
@@ -291,8 +282,8 @@ ipcMain.handle('delete-user', async (event, id) => {
   }
 });
 
-/* ===== Patients: single flexible handler + contact-only handler + CRUD ===== */
-// Flexible get-patients (no args => all, { query } => search, { id } => single)
+//CRUD pacientes
+//Obtener pacientes por ID o busqueda
 ipcMain.handle('get-patients', async (event, opts) => {
   try {
     opts = opts || {};
@@ -321,7 +312,7 @@ ipcMain.handle('get-patients', async (event, opts) => {
   }
 });
 
-// Contact-only handler (named as requested)
+//Solo datos de contacto
 ipcMain.handle('getpacient-contact', async (event, opts) => {
   try {
     opts = opts || {};
@@ -350,7 +341,7 @@ ipcMain.handle('getpacient-contact', async (event, opts) => {
   }
 });
 
-// Create patient (original regPac)
+// Registrar paciente
 ipcMain.handle('regPac', (event, nombre, apellidoP, apellidoM, genero, fechaNac, correo, telefono) => {
   try {
     const result = db.prepare(`
@@ -400,7 +391,7 @@ ipcMain.handle('delete-patient', async (event, id) => {
   }
 });
 
-/* ===== Citas (appointments) ===== */
+//CRUD citas
 ipcMain.handle('regCit', (event, nombre, fecha, hora, nota) => {
   try {
     if (!validDate(fecha)) return { success: false, error: 'Fecha inválida (YYYY-MM-DD)' };
@@ -429,7 +420,7 @@ ipcMain.handle('get-todays-citas', async () => {
     return { success: false, error: String(err) };
   }
 });
-
+// Todas las citas
 ipcMain.handle('get-all-citas', async () => {
   try {
     const rows = db.prepare('SELECT * FROM citas ORDER BY fecha ASC, hora ASC').all();
@@ -478,7 +469,7 @@ ipcMain.handle('delete-cita', async (event, id) => {
   }
 });
 
-/* ===== Open external URL (WhatsApp etc) ===== */
+// Abrir URL externa 
 ipcMain.handle('open-external-url', async (event, url) => {
   try {
     await shell.openExternal(url);
@@ -489,12 +480,11 @@ ipcMain.handle('open-external-url', async (event, url) => {
   }
 });
 
-// Add this handler to your existing main.js (near other ipcMain handlers).
-// It reveals a file in the OS file explorer (so user can attach the generated PDF).
+// Mostrar archivo PDF generado en carpeta
 ipcMain.handle('reveal-file', async (event, filePath) => {
   try {
     if (!filePath) return { success: false, error: 'No file path provided' };
-    // showItemInFolder will open the folder and select the file on most platforms
+    
     shell.showItemInFolder(filePath);
     return { success: true };
   } catch (err) {
