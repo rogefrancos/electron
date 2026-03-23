@@ -25,6 +25,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.4.6",
+    "pdf-parse": "1.1.1",
     "pdfkit": "^0.17.2"
   }
 }

@@ -69,6 +69,28 @@
         <p id="patient-phone" style="margin-top:6px; color:#333;"></p>
       </div>
 
+<section class="pdf-analysis-section">
+  <h3>📊 Analyze Lab Results PDF</h3>
+  <div class="file-input-group">
+    <input type="text" id="pdfFilePath" placeholder="Selected PDF file..." readonly />
+    <button id="selectPdfFileBtn" class="btn-select">Select PDF</button>
+    <button id="analyzePdfBtn" class="btn-analyze">Analyze</button>
+  </div>
+  <div id="analysisStatus" class="status-message"></div>
+</section>
+
+<!-- Modal for displaying analysis results -->
+<div id="analysisModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close-analysis" id="closeAnalysisModal">&times;</span>
+    <h2>📋 Lab Results Analysis</h2>
+    <div id="analysisResultContent" class="analysis-result-container"></div>
+    <div class="modal-footer">
+      <button id="closeAnalysisBtn" class="btn-secondary">Close</button>
+    </div>
+  </div>
+</div>
+
       <div style="display:flex; gap:8px; align-items:center; margin-top:12px;">
         <button id="generate-pdf-btn" class="boton boton_agregar">Generate PDF</button>
 

@@ -789,3 +789,40 @@ button:disabled {
   background: transparent;
   padding-top: 8px;
 }
+.file-input-group {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+#pdfFilePath {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 14px;
+}
+
+#pdfFilePath::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+.btn-select, .btn-analyze {
+  padding: 10px 20px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-select:hover, .btn-analyze:hover {
+  background: #ee5a52;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}

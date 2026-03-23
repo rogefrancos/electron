@@ -12,8 +12,18 @@
   const patientPhoneP = document.getElementById('patient-phone');
   const sendWhatsAppBtn = document.getElementById('send-whatsapp-btn');
   const sendEmailBtn = document.querySelector('.send-email');
+  const pdfFilePath = document.getElementById('pdfFilePath');
+  const selectPdfFileBtn = document.getElementById('selectPdfFileBtn');
+  const analyzePdfBtn = document.getElementById('analyzePdfBtn');
+  const analysisModal = document.getElementById('analysisModal');
+  const closeAnalysisModal = document.getElementById('closeAnalysisModal');
+  const closeAnalysisBtn = document.getElementById('closeAnalysisBtn');
+  const analysisResultContent = document.getElementById('analysisResultContent');
+  const analysisStatus = document.getElementById('analysisStatus');
 
   let lastGeneratedPdf = null;
+  let currentAnalysisData = null;
+  let selectedFilePath = null;
 
   function setStatus(msg) {
     if (!statusMessage) return;
@@ -265,6 +275,73 @@
       }
     });
   }
+
+  selectPdfFileBtn.addEventListener('click', async () => {
+    try {
+      const result = await window.apiResults.selectPDFFile();
+      if (result.success) {
+        selectedFilePath = result.filePath;
+        pdfFilePath.value = result.filePath;
+        analysisStatus.textContent = '✅ PDF file selected';
+        analysisStatus.style.color = '#5cb85c';
+      } else {
+        analysisStatus.textContent = '❌ No file selected';
+        analysisStatus.style.color = '#d9534f';
+      }
+    } catch (error) {
+      console.error('File selection error:', error);
+      analysisStatus.textContent = `❌ Error: ${error.message}`;
+      analysisStatus.style.color = '#d9534f';
+    }
+  });
+
+  // Handle analysis
+  analyzePdfBtn.addEventListener('click', async () => {
+    if (!selectedFilePath) {
+      analysisStatus.textContent = '⚠️ Please select a PDF file first.';
+      analysisStatus.style.color = '#d9534f';
+      return;
+    }
+
+    analysisStatus.textContent = '⏳ Analyzing PDF...';
+    analysisStatus.style.color = '#5bc0de';
+
+    try {
+      const result = await window.apiResults.analyzePDF(selectedFilePath);
+      
+      if (result.success) {
+        currentAnalysisData = result;
+        analysisResultContent.innerHTML = result.html;
+        analysisModal.style.display = 'block';
+        analysisStatus.textContent = '✅ Analysis complete!';
+        analysisStatus.style.color = '#5cb85c';
+      } else {
+        analysisStatus.textContent = `❌ Error: ${result.error}`;
+        analysisStatus.style.color = '#d9534f';
+      }
+    } catch (error) {
+      console.error('PDF analysis error:', error);
+      analysisStatus.textContent = `❌ Error: ${error.message}`;
+      analysisStatus.style.color = '#d9534f';
+    }
+  });
+
+  // Modal controls
+  closeAnalysisModal.onclick = () => { 
+    analysisModal.style.display = 'none'; 
+    analysisStatus.textContent = '';
+  };
+  
+  closeAnalysisBtn.onclick = () => { 
+    analysisModal.style.display = 'none';
+    analysisStatus.textContent = '';
+  };
+
+  window.onclick = (event) => {
+    if (event.target === analysisModal) {
+      analysisModal.style.display = 'none';
+    }
+  };
 
   // init
   if (reportLinkP) reportLinkP.style.display = 'none';

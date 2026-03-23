@@ -3,11 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const dbms = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
+const pdfParse = require('pdf-parse');
+
 
 // local modules
 const { parseHL7 } = require('./HL7');
 const { generatePDF } = require('./pdfgen');
-
+const { analyzeLabResults, generateAnalysisHTML, extractLabValuesFromText } = require('./pdfAnalyzer');
 /*
   main.js (reemplazo completo)
 
@@ -500,5 +502,81 @@ ipcMain.handle('reveal-file', async (event, filePath) => {
   } catch (err) {
     console.error('[main] reveal-file error:', err);
     return { success: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('analyze-pdf-file', async (event, filePath) => {
+  try {
+    console.log('[main] Analyzing PDF:', filePath);
+    if (!fs.existsSync(filePath)) {
+      throw new Error('PDF file not found');
+    }
+    
+    // Read and parse PDF
+    const dataBuffer = fs.readFileSync(filePath);
+    const pdfData = await pdfParse(dataBuffer);
+    const pdfText = pdfData.text;
+    console.log('[main] PDF text extracted:', pdfText.substring(0, 200)); // Log first 200 chars
+    
+    // Extract lab values from text
+    const labResults = extractLabValuesFromText(pdfText);
+    console.log('[main] Extracted lab results:', labResults);
+    
+    if (labResults.length === 0) {
+      return {
+        success: false,
+        error: 'No lab values found in PDF. Please check the file format.',
+        html: `<div class="error"><p>No lab values found in PDF. Please check the file format.</p></div>`
+      };
+    }
+    
+    // Analyze the results
+    const analysis = analyzeLabResults(labResults);
+    const resultHTML = generateAnalysisHTML(analysis);
+    
+    return {
+      success: true,
+      html: resultHTML,
+      analysis: analysis,
+      pdfPath: filePath
+    };
+  } catch (error) {
+    console.error('[main] PDF analysis error:', error);
+    return {
+      success: false,
+      error: error.message,
+      html: `<div class="error"><p>Error analyzing PDF: ${error.message}</p></div>`
+    };
+  }
+});
+
+// Add this new IPC handler in main.js
+ipcMain.handle('select-pdf-file', async (event) => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters: [
+        { name: 'PDF Files', extensions: ['pdf'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]
+    });
+
+    if (!result.canceled) {
+      return {
+        success: true,
+        filePath: result.filePaths[0]
+      };
+    } else {
+      return {
+        success: false,
+        error: 'No file selected'
+      };
+    }
+  } catch (error) {
+    console.error('[main] File dialog error:', error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 });

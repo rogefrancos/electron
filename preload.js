@@ -38,10 +38,13 @@ contextBridge.exposeInMainWorld('apiResults', {
   selectFile: () => ipcRenderer.invoke('select-hl7-file'),
   generatePDF: (content, filenameBase) => ipcRenderer.invoke('generate-pdf-from-hl7', content, filenameBase),
   getPatients: (opts) => ipcRenderer.invoke('get-patients', opts),
-  openExternal: (url) => ipcRenderer.invoke('open-external-url', url)
+  openExternal: (url) => ipcRenderer.invoke('open-external-url', url),
+  selectPDFFile: () => ipcRenderer.invoke('select-pdf-file'),
+  analyzePDF: (filePath) => ipcRenderer.invoke('analyze-pdf-file', filePath),
+    revealFile: (path) => ipcRenderer.invoke('reveal-file', path) // new
 });
 
-// Add to the apiResults exposure in preload.js (merge with your existing apiResults)
+/* Add to the apiResults exposure in preload.js (merge with your existing apiResults)
 contextBridge.exposeInMainWorld('apiResults', {
   selectFile: () => ipcRenderer.invoke('select-hl7-file'),
   generatePDF: (content, filenameBase) => ipcRenderer.invoke('generate-pdf-from-hl7', content, filenameBase),
@@ -49,7 +52,7 @@ contextBridge.exposeInMainWorld('apiResults', {
   openExternal: (url) => ipcRenderer.invoke('open-external-url', url),
   revealFile: (path) => ipcRenderer.invoke('reveal-file', path) // new
 });
-
+*/
 contextBridge.exposeInMainWorld('apiUtils', {
   reloadApp: () => ipcRenderer.invoke('reload-main-window'),
   focusApp: () => ipcRenderer.invoke('focus-main-window')
