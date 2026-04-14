@@ -282,28 +282,29 @@
       if (result.success) {
         selectedFilePath = result.filePath;
         pdfFilePath.value = result.filePath;
-        analysisStatus.textContent = '✅ PDF file selected';
+        analysisStatus.textContent = 'Archivo PDF seleccionado';
         analysisStatus.style.color = '#5cb85c';
       } else {
-        analysisStatus.textContent = '❌ No file selected';
+        analysisStatus.textContent = 'Ningún archivo seleccionado';
         analysisStatus.style.color = '#d9534f';
       }
     } catch (error) {
       console.error('File selection error:', error);
-      analysisStatus.textContent = `❌ Error: ${error.message}`;
+      analysisStatus.textContent = `Error: ${error.message}`;
       analysisStatus.style.color = '#d9534f';
     }
   });
-
-  // Handle analysis
+  // --------------
+  // Analisis     -
+  //---------------
   analyzePdfBtn.addEventListener('click', async () => {
     if (!selectedFilePath) {
-      analysisStatus.textContent = '⚠️ Please select a PDF file first.';
+      analysisStatus.textContent = 'Por favor seleccione un archivo PDF primero.';
       analysisStatus.style.color = '#d9534f';
       return;
     }
 
-    analysisStatus.textContent = '⏳ Analyzing PDF...';
+    analysisStatus.textContent = 'Analizando PDF...';
     analysisStatus.style.color = '#5bc0de';
 
     try {
@@ -313,15 +314,15 @@
         currentAnalysisData = result;
         analysisResultContent.innerHTML = result.html;
         analysisModal.style.display = 'block';
-        analysisStatus.textContent = '✅ Analysis complete!';
+        analysisStatus.textContent = 'Análisis completado';
         analysisStatus.style.color = '#5cb85c';
       } else {
-        analysisStatus.textContent = `❌ Error: ${result.error}`;
+        analysisStatus.textContent = `Error: ${result.error}`;
         analysisStatus.style.color = '#d9534f';
       }
     } catch (error) {
-      console.error('PDF analysis error:', error);
-      analysisStatus.textContent = `❌ Error: ${error.message}`;
+      console.error('Error en el analisis del PDF:', error);
+      analysisStatus.textContent = `Error: ${error.message}`;
       analysisStatus.style.color = '#d9534f';
     }
   });

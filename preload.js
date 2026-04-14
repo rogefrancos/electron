@@ -41,7 +41,7 @@ contextBridge.exposeInMainWorld('apiResults', {
   openExternal: (url) => ipcRenderer.invoke('open-external-url', url),
   selectPDFFile: () => ipcRenderer.invoke('select-pdf-file'),
   analyzePDF: (filePath) => ipcRenderer.invoke('analyze-pdf-file', filePath),
-    revealFile: (path) => ipcRenderer.invoke('reveal-file', path) // new
+  revealFile: (path) => ipcRenderer.invoke('reveal-file', path) // new
 });
 
 /* Add to the apiResults exposure in preload.js (merge with your existing apiResults)

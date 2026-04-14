@@ -491,8 +491,6 @@ ipcMain.handle('open-external-url', async (event, url) => {
   }
 });
 
-// Add this handler to your existing main.js (near other ipcMain handlers).
-// It reveals a file in the OS file explorer (so user can attach the generated PDF).
 ipcMain.handle('reveal-file', async (event, filePath) => {
   try {
     if (!filePath) return { success: false, error: 'No file path provided' };
@@ -512,25 +510,26 @@ ipcMain.handle('analyze-pdf-file', async (event, filePath) => {
       throw new Error('PDF file not found');
     }
     
-    // Read and parse PDF
+    // Se lee el PDF, se selecciona aqui
     const dataBuffer = fs.readFileSync(filePath);
     const pdfData = await pdfParse(dataBuffer);
     const pdfText = pdfData.text;
     console.log('[main] PDF text extracted:', pdfText.substring(0, 200)); // Log first 200 chars
     
-    // Extract lab values from text
+    // Se sacan los valores registrados en el diccionario del texto
     const labResults = extractLabValuesFromText(pdfText);
     console.log('[main] Extracted lab results:', labResults);
     
+    // Se comprueba que se hayan extraido al menos 1 resultado
     if (labResults.length === 0) {
       return {
         success: false,
-        error: 'No lab values found in PDF. Please check the file format.',
-        html: `<div class="error"><p>No lab values found in PDF. Please check the file format.</p></div>`
+        error: 'No se encontraron valores de laboratorios.',
+        html: `<div class="error"><p>No se encontraron valores de laboratorios.</p></div>`
       };
     }
     
-    // Analyze the results
+    // Se llaman las fucniones donde se analiza y genera la estructura con los resultados
     const analysis = analyzeLabResults(labResults);
     const resultHTML = generateAnalysisHTML(analysis);
     
@@ -550,7 +549,7 @@ ipcMain.handle('analyze-pdf-file', async (event, filePath) => {
   }
 });
 
-// Add this new IPC handler in main.js
+// Selecciona el archivo
 ipcMain.handle('select-pdf-file', async (event) => {
   try {
     const result = await dialog.showOpenDialog(mainWindow, {

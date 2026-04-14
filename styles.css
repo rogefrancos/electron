@@ -811,7 +811,7 @@ button:disabled {
 
 .btn-select, .btn-analyze {
   padding: 10px 20px;
-  background: #ff6b6b;
+  background: lightseagreen;
   color: white;
   border: none;
   border-radius: 4px;
@@ -822,7 +822,7 @@ button:disabled {
 }
 
 .btn-select:hover, .btn-analyze:hover {
-  background: #ee5a52;
+  background: rgb(0, 107, 107);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
